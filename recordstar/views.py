@@ -1,7 +1,9 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, HttpResponseRedirect
+from django.views import generic
+
 
 # SHERRIFF: very basic index page created
-def index(request):
-    return HttpResponse("This now has a failed test.")
+class IndexView(generic.TemplateView):
+    template_name = "index.html"
 # Create your views here.
