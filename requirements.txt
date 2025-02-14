@@ -11,3 +11,5 @@ django-heroku
 
 # for google oauth2.0
 django-allauth
+
+requests
