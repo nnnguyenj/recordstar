@@ -1,0 +1,31 @@
+{% load static %}
+{% load socialaccount %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecordStar</title>
+    <link rel="stylesheet" href="{% static 'index.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title"> RecordStar </h1>
+    </div>
+    {% if user.is_authenticated %}
+        <div class="account_info">
+            <h2> Welcome, {{ user.username }} </h2>
+            <a href="{% url 'account_logout' %}" class="logout_button">
+                Logout
+            </a>
+        </div>
+    {% else %}
+        <div class="account_info">
+            <a href="{% provider_login_url 'google' %}?next=/recordstar/" class="login_button">
+                Login with Google
+             </a>
+        </div>
+    {% endif %}
+</body>
+</html>

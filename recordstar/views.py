@@ -5,5 +5,5 @@ from django.views import generic
 
 # SHERRIFF: very basic index page created
 class IndexView(generic.TemplateView):
-    template_name = "index.html"
+    template_name = "recordstar/index.html"
 # Create your views here.
