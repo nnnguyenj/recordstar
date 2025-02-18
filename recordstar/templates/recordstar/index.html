@@ -15,10 +15,18 @@
     </div>
     {% if user.is_authenticated %}
         <div class="account_info">
-            <h2> Welcome, {{ user.username }} </h2>
-            <a href="{% url 'account_logout' %}" class="logout_button">
-                Logout
-            </a>
+            {% comment %}
+            Check the user's profile to determine their account type.
+            {% endcomment %}
+            {% if user.profile.account_type == 'L' %}
+                <h2>Welcome Librarian, {{ user.username }}</h2>
+                <p>You have librarian privileges. You can add new items and collections.</p>
+                <a href="{% url 'add_item' %}">Add New Item</a>
+            {% else %}
+                <h2>Welcome Patron, {{ user.username }}</h2>
+                <p>You can browse and request to borrow items.</p>
+            {% endif %}
+            <a href="{% url 'account_logout' %}" class="logout_button"> Logout </a>
         </div>
     {% else %}
         <div class="account_info">
