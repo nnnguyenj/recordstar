@@ -5,6 +5,7 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.account.utils import perform_login
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -18,3 +19,7 @@ def index_view(request):
 def logout_view(request):
     logout(request)
     return redirect("recordstar/")
+
+@login_required
+def dashboard_view(request):
+    return render(request, "dashboard.html", {"user": request.user})
