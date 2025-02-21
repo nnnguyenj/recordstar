@@ -17,3 +17,5 @@ requests
 PyJWT
 
 cryptography
+
+Pillow
