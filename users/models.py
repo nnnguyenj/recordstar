@@ -11,6 +11,7 @@ class Profile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     account_type = models.CharField(max_length=1, choices=ACCOUNT_TYPE_CHOICES, default='P')
+    image = models.ImageField(default='default.jpg', upload_to='profile_pics')
 
     def __str__(self):
         return f"{self.user.username} ({self.get_account_type_display()})"
