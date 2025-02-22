@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    path('google/login/', views.google_login, name='google_login'),
     path("", views.index_view, name="index"),
     path("logout", views.logout_view, name="logout"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

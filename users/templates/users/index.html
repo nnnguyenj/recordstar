@@ -10,9 +10,9 @@
 <body>
     <div>
         <h2> Google Login </h2>
-        <form method="POST" action="{% provider_login_url 'google' %}">
+        <form method="POST" action="{% url 'google_login' %}">
             {% csrf_token %}
-            <label for="account _type">Select Account Type:</label>
+            <label for="account_type">Select Account Type:</label>
             <select name="account_type" id="account_type">
                 <option value="P">Patron</option>
                 <option value="L">Librarian</option>
