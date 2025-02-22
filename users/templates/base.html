@@ -1,270 +1,129 @@
+{% load bootstrap5 static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}RecordStar{% endblock %}</title>
+  
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
   
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
+  
+  <!-- Bootstrap CSS using django-bootstrap5 -->
+  {% bootstrap_css %}
+  
   <style>
-
-    /* Make html/body take up the full height */
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: "Open Sans", sans-serif;
+    body {
+      font-family: 'Open Sans', sans-serif;
     }
-
-    /* Main wrapper: a horizontal Flex container
-       - sidebar on the left
-       - main area (with user info + content + footer) on the right */
-    .wrapper {
-      display: flex;
-      min-height: 100vh; /* fill the entire viewport height */
-    }
-
-
-    
-    /* Sidebar: fixed width, full height, light gray background */
+    /* Sidebar styling */
     .sidebar {
-      width: 220px;
       background-color: #ebeff1;
+      min-height: 100vh;
       padding: 20px;
-      box-sizing: border-box;
     }
-    /* "Box" headers in the sidebar */
     .sidebar h2 {
       padding: 10px;
-      margin: 0 0 10px;
       font-weight: bold;
-      text-align: left;
-      margin-left: -10px; /* adjust as needed */
     }
     .sidebar ul {
       list-style: none;
-      margin: 0;
-      padding: 0;
-      margin-left: 20px; /* adjust as needed */
+      padding-left: 20px;
     }
-   
-    /* Each link item is left-aligned */
     .sidebar li {
       margin-bottom: 8px;
-      text-align: left;  /* ensure left alignment */
     }
-
-    /* Links themselves */
     .sidebar li a {
       text-decoration: none;
       color: #333;
-      font-size: 1em;
-      font-weight: normal;
     }
-    /* Hover effect (optional) */
     .sidebar li a:hover {
-      color: #d00;  /* or any highlight color */
+      color: #d00;
     }
-
-    /* search bar */
+    /* Search bar custom styles */
     .search-container {
-        position: relative;
-        margin-bottom: 20px;
-        margin-top: -10px;
-
-      }
-      /* The icon inside the input */
-      .search-container .fa-search {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
-        font-size: 16px;
-      }
-      /* The text field itself */
-      .search-container input[type="text"] {
-        width: 75%;
-        padding: 8px 8px 8px 36px; /* left padding to accommodate icon */
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background-color: #f0f0f0; /* or #ebeff1 if you want it slightly lighter */
-        outline: none;
-      }
-      .search-container input::placeholder {
-        color: #aaa;
-      }
-
-    /* Main area: grows to fill the remaining width, 
-       uses a column layout so we can place user info at top, content in the middle, footer at bottom */
-    .main {
-      flex: 1;                 /* fill remaining horizontal space */
-      display: flex;
-      flex-direction: column;  /* stack user info + content + footer vertically */
-      position: relative;      /* allows absolutely positioning user info if desired */
-      background-color: #fcfcfc; /* CHANGE THIS to the color you want */
-
+      position: relative;
+      margin-bottom: 20px;
     }
-
-    /* Top-right user info box container */
-    .user-info {
-      display: flex;
-      justify-content: flex-end; /* place user dropdown on the right */
-      padding: 10px 20px;
-    }
-    /* The box around "User Information" */
-    .user-dropdown {
-        display: inline-block;
-        text-align: center;
-        border: 1px solid #ddd;
-        padding: 10px;
-        cursor: pointer;
-        position: relative;
-        box-sizing: border-box;
-        background-color: #fff; /* ensures the dropdown button is white */
-    }
-    
-
-
-    /* Dropdown content (hidden by default) */
-    
-    .dropdown-content {
-      display: none;
+    .search-container .fa-search {
       position: absolute;
-      right: 0;
-      top: 100%;
-      background-color: #fff;
-      min-width: 200px;
-      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-      z-index: 1;
-      text-align: left;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 16px;
     }
-    .dropdown-content a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
+    .search-container input[type="text"] {
+      padding-left: 36px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
-    .dropdown-content a:hover {
-      background-color: #f1f1f1;
-    }
-    /* Show dropdown on hover */
-    .user-dropdown:hover .dropdown-content {
-      display: block;
-    }
-
-
-
-    /* The main content area (where child templates will inject their content) */
-    .content {
-      flex: 1;                 /* fill remaining vertical space */
-      text-align: center;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    /* Footer at the bottom of the main area */
-    footer {
-      text-align: center;
-      padding: 10px;
-    }
-    
-    .dashboard-wrapper {
-      /* Move this entire section upward */
-      margin-top: -70px; /* adjust as needed, e.g. -50px if you want more overlap */
-
-      /* Background color for just this section */
-      background-color: #fcfcfc; /* change to whatever color you like */
-
-      /* Add some padding so text doesn't sit against the edges */
-      padding: 40px;
-      box-sizing: border-box;
-
-      /* Optional: a subtle box-shadow or border to emphasize the section */
-      /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
-      /* border: 1px solid #ddd; */
-    }
-
-    /* Stack sections vertically with a gap */
-    .dashboard-sections {
-      display: flex;
-      flex-direction: column; /* vertical stack */
-      gap: 20px;              /* spacing between sections */
-      text-align: left;
-      
-    }
-    
-    /* Each section gets its own styling */
-    .dashboard-section {
-      background-color: #fff; /* or whatever color you like */
-      padding: 20px;
-      border: 1px solid #ddd; /* subtle border to separate sections */
-      border-radius: 4px;     /* optional rounded corners */
-      text-align: left
-    }
-    .dashboard-section h3 {
-        margin-top: 0;
-    }
-    
   </style>
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-  <div class="wrapper">
-    <!-- Left sidebar fills the entire height -->
-    <aside class="sidebar">
-      <h2>Search</h2>
-      <div class="search-container">
-        <form action="/search" method="GET">
-          <!-- The search icon (positioned inside input) -->
-          <i class="fa fa-search"></i>
-          <!-- The text input -->
-          <input type="text" placeholder="Search..." name="search">
-        </form>
-      </div>
-      <ul>
-        <li><a href="{% url 'dashboard' %}">Home</a></li>
-        <li><a href="#">Playlists</a></li>
-        <li><a href="#">Recent Activity</a></li>
-      </ul>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar">
+        <h2>Search</h2>
+        <div class="search-container">
+          <form action="/search" method="GET">
+            <i class="fa fa-search"></i>
+            <input type="text" name="search" placeholder="Search..." class="form-control">
+          </form>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Playlists</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Recent Activity</a></li>
+        </ul>
+        <h2 class="mt-4">Your Library</h2>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="#">Your Collection</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Your Ratings</a></li>
+        </ul>
+        <h2 class="mt-4">Request Center</h2>
+        <!-- Additional items if needed -->
+      </nav>
 
-      <h2>Your Library</h2>
-      <ul>
-        <li><a href="#">Your Collection</a></li>
-        <li><a href="#">Your Ratings</a></li>
-      </ul>
-
-      <h2>Request Center</h2>
-      <!-- Additional items here if needed -->
-    </aside>
-
-    <!-- Main area (right side) -->
-    <div class="main">
-      <!-- Top-right user info box -->
-      <div class="user-info">
-        <div class="user-dropdown">
-          <span> {{ user.username }}</span>
-          <div class="dropdown-content">
-            <a href="#">Profile</a>
-            <a href="#">Settings</a>
-            <a href="{% url 'logout' %}">Logout</a>
+      <!-- Main Content -->
+      <main class="col-md-9 col-lg-10 d-flex flex-column" style="background-color: #fcfcfc;">
+        <!-- Top-right user info -->
+        <div class="d-flex justify-content-end p-3">
+          <div class="dropdown">
+            <a class="dropdown-toggle text-decoration-none" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item" href="#">Profile</a></li>
+              <li><a class="dropdown-item" href="#">Settings</a></li>
+              <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+            </ul>
           </div>
         </div>
-      </div>
 
-      <!-- Central content area where child templates (e.g., dashboard.html) will inject content -->
-      <div class="content">
-        {% block content %}{% endblock %}
-      </div>
+        <!-- Central content area -->
+        <div class="flex-fill p-3">
+          {% block content %}{% endblock %}
+        </div>
 
-      <footer>
-        <p>&copy; 2025 RecordStar</p>
-      </footer>
+        <!-- Footer -->
+        <footer class="text-center p-3">
+          <p>&copy; 2025 RecordStar</p>
+        </footer>
+      </main>
     </div>
   </div>
+
+  <!-- Bootstrap JS using django-bootstrap5 -->
+  {% bootstrap_javascript %}
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
