@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}RecordStar{% endblock %}</title>
   <style>
-    /* Ensure html/body take up full height */
+    /* Make html/body take up the full height */
     html, body {
       margin: 0;
       padding: 0;
@@ -13,78 +13,29 @@
       font-family: "Helvetica", "Arial Narrow", sans-serif;
     }
 
-    /* Top header styling */
-    .top-header {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      background-color: #333;
-      color: #fff;
-      padding: 10px 20px;
-      position: relative;
-    }
-    /* Dropdown container */
-    .user-dropdown {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-    }
-    /* Dropdown content (hidden by default) */
-    .user-dropdown .dropdown-content {
-      display: none;
-      position: absolute;
-      right: 0;
-      background-color: #fff;
-      min-width: 150px;
-      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-      z-index: 1;
-    }
-    /* Dropdown links */
-    .user-dropdown .dropdown-content a {
-      color: #333;
-      padding: 12px 16px;
-      text-decoration: none;
-      display: block;
-    }
-    .user-dropdown .dropdown-content a:hover {
-      background-color: #f1f1f1;
-    }
-    /* Show dropdown on hover */
-    .user-dropdown:hover .dropdown-content {
-      display: block;
-    }
-
-    /* Wrapper to manage the entire layout (header, content, footer) */
+    /* Main wrapper: a horizontal Flex container
+       - sidebar on the left
+       - main area (with user info + content + footer) on the right */
     .wrapper {
       display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      min-height: 100vh; /* fill the entire viewport height */
     }
 
-    /* Content area: sidebar on the left, main content on the right */
-    .content {
-      display: flex;
-      flex: 1;
-      align-items: stretch;
-    }
-
-    /* Sidebar: full height, light gray background */
+    /* Sidebar: fixed width, full height, light gray background */
     .sidebar {
       width: 220px;
       background-color: #f0f0f0;
       padding: 20px;
       box-sizing: border-box;
     }
-
     /* "Box" headers in the sidebar */
     .sidebar h2 {
       background-color: #ddd;
       padding: 10px;
       margin: 0 0 10px;
       font-weight: bold;
+      text-align: center;
     }
-
-    /* Sub-list under each header */
     .sidebar ul {
       list-style: none;
       margin: 0 0 20px;
@@ -94,67 +45,121 @@
       margin-bottom: 5px;
     }
 
-    /* Main content area to the right */
+    /* Main area: grows to fill the remaining width, 
+       uses a column layout so we can place user info at top, content in the middle, footer at bottom */
     .main {
-      flex: 1;
-      padding: 20px;
+      flex: 1;                 /* fill remaining horizontal space */
+      display: flex;
+      flex-direction: column;  /* stack user info + content + footer vertically */
+      position: relative;      /* allows absolutely positioning user info if desired */
+    }
+
+    /* Top-right user info box container */
+    .user-info {
+      display: flex;
+      justify-content: flex-end; /* place user dropdown on the right */
+      padding: 10px 20px;
+    }
+    /* The box around "User Information" */
+    .user-dropdown {
+        display: inline-block;
+        text-align: center;
+        border: 1px solid #ddd;
+        padding: 10px;
+        cursor: pointer;
+        position: relative;
+        box-sizing: border-box;
+    }
+    /* Dropdown content (hidden by default) */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background-color: #fff;
+      min-width: 200px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      z-index: 1;
+      text-align: left;
+    }
+    .dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+    .dropdown-content a:hover {
+      background-color: #f1f1f1;
+    }
+    /* Show dropdown on hover */
+    .user-dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* The main content area (where child templates will inject their content) */
+    .content {
+      flex: 1;                 /* fill remaining vertical space */
       text-align: center;
+      padding: 20px;
       box-sizing: border-box;
     }
 
-    /* Footer pinned at the bottom */
+    /* Footer at the bottom of the main area */
     footer {
       text-align: center;
       background-color: #ddd;
       padding: 10px;
     }
+    .dashboard-header {
+        margin-top: -50px; /* moves the entire container up */
+      }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <!-- Top header with User Information dropdown -->
-    <header class="top-header">
-      <div class="user-dropdown">
-        <span>{{ user.username }}</span>
-        <div class="dropdown-content">
-          <a href="#">Profile</a>
-          <a href="#">Settings</a>
-          <a href="{% url 'logout' %}">Logout</a>
+    <!-- Left sidebar fills the entire height -->
+    <aside class="sidebar">
+      <h2>Search</h2>
+      <ul>
+        <li><a href="{% url 'dashboard' %}">Home</a></li>
+        <li><a href="#">Playlists</a></li>
+        <li><a href="#">Recently Played</a></li>
+        <li><a href="#">Recent Activity</a></li>
+      </ul>
+
+      <h2>Your Library</h2>
+      <ul>
+        <li><a href="#">Your Collection</a></li>
+        <li><a href="#">Your Ratings</a></li>
+      </ul>
+
+      <h2>Request Center</h2>
+      <!-- Additional items here if needed -->
+    </aside>
+
+    <!-- Main area (right side) -->
+    <div class="main">
+      <!-- Top-right user info box -->
+      <div class="user-info">
+        <div class="user-dropdown">
+          <span> {{ user.username }}</span>
+          <div class="dropdown-content">
+            <a href="#">Profile</a>
+            <a href="#">Settings</a>
+            <a href="{% url 'logout' %}">Logout</a>
+          </div>
         </div>
       </div>
-    </header>
 
-    <!-- Main content area: Sidebar on the left, Main content on the right -->
-    <div class="content">
-      <aside class="sidebar">
-        <h2>Search</h2>
-        <ul>
-          <li><a href="{% url 'dashboard' %}">Home</a></li>
-          <li><a href="#">Playlists</a></li>
-          <li><a href="#">Recently Played</a></li>
-          <li><a href="#">Recent Activity</a></li>
-          <li><a href="{% url 'logout' %}">Logout</a></li>
-        </ul>
-
-        <h2>Your Library</h2>
-        <ul>
-          <li><a href="#">Your Collection</a></li>
-          <li><a href="#">Your Ratings</a></li>
-        </ul>
-
-        <h2>Request Center</h2>
-        <!-- Additional items here if needed -->
-      </aside>
-
-      <!-- Main content area where dashboard.html will inject its content -->
-      <main class="main">
+      <!-- Central content area where child templates (e.g., dashboard.html) will inject content -->
+      <div class="content">
         {% block content %}{% endblock %}
-      </main>
-    </div>
+      </div>
 
-    <footer>
-      <p>&copy; 2025 RecordStar</p>
-    </footer>
+      <footer>
+        <p>&copy; 2025 RecordStar</p>
+      </footer>
+    </div>
   </div>
 </body>
 </html>
