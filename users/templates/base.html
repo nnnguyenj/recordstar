@@ -21,28 +21,46 @@
       min-height: 100vh; /* fill the entire viewport height */
     }
 
+
+
     /* Sidebar: fixed width, full height, light gray background */
     .sidebar {
       width: 220px;
-      background-color: #f0f0f0;
+      background-color: #ebeff1;
       padding: 20px;
       box-sizing: border-box;
     }
     /* "Box" headers in the sidebar */
     .sidebar h2 {
-      background-color: #ddd;
       padding: 10px;
       margin: 0 0 10px;
       font-weight: bold;
-      text-align: center;
+      text-align: left;
+      margin-left: -10px; /* adjust as needed */
     }
     .sidebar ul {
       list-style: none;
-      margin: 0 0 20px;
+      margin: 0;
       padding: 0;
+      margin-left: 20px; /* adjust as needed */
     }
-    .sidebar ul li {
-      margin-bottom: 5px;
+   
+    /* Each link item is left-aligned */
+    .sidebar li {
+      margin-bottom: 8px;
+      text-align: left;  /* ensure left alignment */
+    }
+
+    /* Links themselves */
+    .sidebar li a {
+      text-decoration: none;
+      color: #333;
+      font-size: 1em;
+      font-weight: normal;
+    }
+    /* Hover effect (optional) */
+    .sidebar li a:hover {
+      color: #d00;  /* or any highlight color */
     }
 
     /* Main area: grows to fill the remaining width, 
@@ -52,7 +70,11 @@
       display: flex;
       flex-direction: column;  /* stack user info + content + footer vertically */
       position: relative;      /* allows absolutely positioning user info if desired */
+      background-color: #fcfcfc; /* CHANGE THIS to the color you want */
+
     }
+
+
 
     /* Top-right user info box container */
     .user-info {
@@ -69,8 +91,13 @@
         cursor: pointer;
         position: relative;
         box-sizing: border-box;
+        background-color: #fff; /* ensures the dropdown button is white */
     }
+    
+
+
     /* Dropdown content (hidden by default) */
+    
     .dropdown-content {
       display: none;
       position: absolute;
@@ -96,6 +123,8 @@
       display: block;
     }
 
+
+
     /* The main content area (where child templates will inject their content) */
     .content {
       flex: 1;                 /* fill remaining vertical space */
@@ -107,12 +136,40 @@
     /* Footer at the bottom of the main area */
     footer {
       text-align: center;
-      background-color: #ddd;
       padding: 10px;
     }
-    .dashboard-header {
-        margin-top: -50px; /* moves the entire container up */
-      }
+    
+    .dashboard-wrapper {
+      /* Move this entire section upward */
+      margin-top: -70px; /* adjust as needed, e.g. -50px if you want more overlap */
+
+      /* Background color for just this section */
+      background-color: #fcfcfc; /* change to whatever color you like */
+
+      /* Add some padding so text doesn't sit against the edges */
+      padding: 40px;
+      box-sizing: border-box;
+
+      /* Optional: a subtle box-shadow or border to emphasize the section */
+      /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
+      /* border: 1px solid #ddd; */
+    }
+
+    /* Stack sections vertically with a gap */
+    .dashboard-sections {
+      display: flex;
+      flex-direction: column; /* vertical stack */
+      gap: 20px;              /* spacing between sections */
+    }
+    
+    /* Each section gets its own styling */
+    .dashboard-section {
+      background-color: #fff; /* or whatever color you like */
+      padding: 20px;
+      border: 1px solid #ddd; /* subtle border to separate sections */
+      border-radius: 4px;     /* optional rounded corners */
+    }
+
   </style>
 </head>
 <body>

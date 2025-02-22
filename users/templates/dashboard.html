@@ -3,18 +3,26 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
+<div class="dashboard-wrapper">
+    
     <h1>Welcome, {{ user.username }}!</h1>
     <p>This is your dashboard where you can see your content.</p>
 
-    <section>
-        <h3>Recent Activity</h3>
-        <p>No recent activity yet.</p>
-    </section>
+    <!-- Container to hold multiple sections in a vertical stack -->
+    <div class="dashboard-sections">
+        
+        <!-- Recent Activity Section -->
+        <section class="dashboard-section">
+            <h3>Recent Activity</h3>
+            <p>No recent activity yet.</p>
+        </section>
 
-    <section>
-        <h3>Your Playlists</h3>
-        <p>No playlists available.</p>
-    </section>
+        <!-- Your Playlists Section -->
+        <section class="dashboard-section">
+            <h3>Your Playlists</h3>
+            <p>No playlists available.</p>
+        </section>
+
+    </div>
 </div>
 {% endblock %}
