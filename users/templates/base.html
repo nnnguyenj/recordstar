@@ -1,37 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}RecordStar{% endblock %}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}RecordStar{% endblock %}</title>
+  <style>
+    /* Ensure html/body take up full height */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Helvetica", "Arial Narrow", sans-serif;
+    }
+
+    /* Top header styling */
+    .top-header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      background-color: #333;
+      color: #fff;
+      padding: 10px 20px;
+      position: relative;
+    }
+    /* Dropdown container */
+    .user-dropdown {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+    /* Dropdown content (hidden by default) */
+    .user-dropdown .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #fff;
+      min-width: 150px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+    /* Dropdown links */
+    .user-dropdown .dropdown-content a {
+      color: #333;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+    .user-dropdown .dropdown-content a:hover {
+      background-color: #f1f1f1;
+    }
+    /* Show dropdown on hover */
+    .user-dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* Wrapper to manage the entire layout (header, content, footer) */
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Content area: sidebar on the left, main content on the right */
+    .content {
+      display: flex;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    /* Sidebar: full height, light gray background */
+    .sidebar {
+      width: 220px;
+      background-color: #f0f0f0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* "Box" headers in the sidebar */
+    .sidebar h2 {
+      background-color: #ddd;
+      padding: 10px;
+      margin: 0 0 10px;
+      font-weight: bold;
+    }
+
+    /* Sub-list under each header */
+    .sidebar ul {
+      list-style: none;
+      margin: 0 0 20px;
+      padding: 0;
+    }
+    .sidebar ul li {
+      margin-bottom: 5px;
+    }
+
+    /* Main content area to the right */
+    .main {
+      flex: 1;
+      padding: 20px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    /* Footer pinned at the bottom */
+    footer {
+      text-align: center;
+      background-color: #ddd;
+      padding: 10px;
+    }
+  </style>
 </head>
 <body>
-
-    <!-- Navigation -->
-    <header>
-        <h1>RecordStar</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'dashboard' %}">Home</a></li>
-                <li><a href="#">Search</a></li>
-                <li><a href="#">Library</a></li>
-                <li><a href="#">Playlists</a></li>
-                <li><a href="#">Recently Played</a></li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-            </ul>
-        </nav>
+  <div class="wrapper">
+    <!-- Top header with User Information dropdown -->
+    <header class="top-header">
+      <div class="user-dropdown">
+        <span>{{ user.username }}</span>
+        <div class="dropdown-content">
+          <a href="#">Profile</a>
+          <a href="#">Settings</a>
+          <a href="{% url 'logout' %}">Logout</a>
+        </div>
+      </div>
     </header>
 
-    <!-- Main Content Block -->
-    <main>
+    <!-- Main content area: Sidebar on the left, Main content on the right -->
+    <div class="content">
+      <aside class="sidebar">
+        <h2>Search</h2>
+        <ul>
+          <li><a href="{% url 'dashboard' %}">Home</a></li>
+          <li><a href="#">Playlists</a></li>
+          <li><a href="#">Recently Played</a></li>
+          <li><a href="#">Recent Activity</a></li>
+          <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+
+        <h2>Your Library</h2>
+        <ul>
+          <li><a href="#">Your Collection</a></li>
+          <li><a href="#">Your Ratings</a></li>
+        </ul>
+
+        <h2>Request Center</h2>
+        <!-- Additional items here if needed -->
+      </aside>
+
+      <!-- Main content area where dashboard.html will inject its content -->
+      <main class="main">
         {% block content %}{% endblock %}
-    </main>
+      </main>
+    </div>
 
-    <!-- Footer -->
     <footer>
-        <p>&copy; 2025 RecordStar</p>
+      <p>&copy; 2025 RecordStar</p>
     </footer>
-
+  </div>
 </body>
 </html>
-
