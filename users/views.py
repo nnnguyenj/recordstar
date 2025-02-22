@@ -14,7 +14,7 @@ def index_view(request):
         account_type = request.POST.get("account_type", "P") #defaults to patron
         request.session["account_type"] = account_type #stores in session
         return redirect(reverse("socialaccount_login", args=["google"])) #redirects to Google login
-    return render(request, "users/index.html")
+    return render(request, "index.html")
 
 def logout_view(request):
     logout(request)
