@@ -4,13 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}RecordStar{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
   <style>
+
     /* Make html/body take up the full height */
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: "Helvetica", "Arial Narrow", sans-serif;
+      font-family: "Open Sans", sans-serif;
     }
 
     /* Main wrapper: a horizontal Flex container
@@ -22,7 +29,7 @@
     }
 
 
-
+    
     /* Sidebar: fixed width, full height, light gray background */
     .sidebar {
       width: 220px;
@@ -63,6 +70,36 @@
       color: #d00;  /* or any highlight color */
     }
 
+    /* search bar */
+    .search-container {
+        position: relative;
+        margin-bottom: 20px;
+        margin-top: -10px;
+
+      }
+      /* The icon inside the input */
+      .search-container .fa-search {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 16px;
+      }
+      /* The text field itself */
+      .search-container input[type="text"] {
+        width: 75%;
+        padding: 8px 8px 8px 36px; /* left padding to accommodate icon */
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f0f0f0; /* or #ebeff1 if you want it slightly lighter */
+        outline: none;
+      }
+      .search-container input::placeholder {
+        color: #aaa;
+      }
+
     /* Main area: grows to fill the remaining width, 
        uses a column layout so we can place user info at top, content in the middle, footer at bottom */
     .main {
@@ -73,8 +110,6 @@
       background-color: #fcfcfc; /* CHANGE THIS to the color you want */
 
     }
-
-
 
     /* Top-right user info box container */
     .user-info {
@@ -160,6 +195,8 @@
       display: flex;
       flex-direction: column; /* vertical stack */
       gap: 20px;              /* spacing between sections */
+      text-align: left;
+      
     }
     
     /* Each section gets its own styling */
@@ -168,8 +205,12 @@
       padding: 20px;
       border: 1px solid #ddd; /* subtle border to separate sections */
       border-radius: 4px;     /* optional rounded corners */
+      text-align: left
     }
-
+    .dashboard-section h3 {
+        margin-top: 0;
+    }
+    
   </style>
 </head>
 <body>
@@ -177,10 +218,17 @@
     <!-- Left sidebar fills the entire height -->
     <aside class="sidebar">
       <h2>Search</h2>
+      <div class="search-container">
+        <form action="/search" method="GET">
+          <!-- The search icon (positioned inside input) -->
+          <i class="fa fa-search"></i>
+          <!-- The text input -->
+          <input type="text" placeholder="Search..." name="search">
+        </form>
+      </div>
       <ul>
         <li><a href="{% url 'dashboard' %}">Home</a></li>
         <li><a href="#">Playlists</a></li>
-        <li><a href="#">Recently Played</a></li>
         <li><a href="#">Recent Activity</a></li>
       </ul>
 
