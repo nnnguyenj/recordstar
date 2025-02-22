@@ -20,6 +20,6 @@ def logout_view(request):
     logout(request)
     return redirect("recordstar/")
 
-@login_required
+#@login_required
 def dashboard_view(request):
     return render(request, "dashboard.html", {"user": request.user})
