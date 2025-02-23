@@ -28,7 +28,7 @@
       padding: 20px;
     }
     .sidebar h2 {
-      padding: 10px;
+      padding: 0.5rem;
       font-weight: bold;
     }
     .sidebar ul {
@@ -36,7 +36,7 @@
       padding-left: 20px;
     }
     .sidebar li {
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     .sidebar li a {
       text-decoration: none;
@@ -50,6 +50,22 @@
       position: relative;
       margin-bottom: 20px;
     }
+    .sidebar ul.nav.flex-column {
+      margin-bottom: 0;      /* Remove bottom margin if any */
+      padding-left: 0;       /* Remove extra left padding */
+      gap: 0;                /* If your Bootstrap version supports gap directly in CSS */
+    }
+    
+    .sidebar .nav-item {
+      margin-bottom: 2px !important; /* Force a smaller margin between items */
+    }
+    
+    .sidebar .nav-link {
+      padding-top: 2px !important;   /* Reduce vertical padding */
+      padding-bottom: 2px !important;
+      line-height: 1.2 !important;   /* Tighten line spacing if desired */
+    }
+    
     .search-container .fa-search {
       position: absolute;
       left: 10px;
