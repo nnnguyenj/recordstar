@@ -14,3 +14,6 @@ def google_login(request):
         account_type = request.POST.get('account_type', 'P')
         request.session['account_type'] = account_type
     return oauth2_login(request)
+
+def dashboard_view(request):
+    return render(request, 'users/dashboard.html')

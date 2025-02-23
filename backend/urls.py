@@ -23,4 +23,8 @@ urlpatterns = [
     path("recordstar/", include("recordstar.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("users.urls")),
+    path('dashboard/', include('recordstar.urls')),
+    path('users/', include('users.urls')),
+# Replace 'your_app' with your actual app name
+
 ]
