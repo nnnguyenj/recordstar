@@ -2,29 +2,27 @@
 {% load bootstrap5 %}
 
 {% block title %}Dashboard{% endblock %}
-
 {% block content %}
-<div class="d-flex align-items-start justify-content-center pt-5" style="min-height: 80vh;">
-  <div class="text-center">
-    <h1>Welcome, {{ user.username }}!</h1>
-    <p>This is your dashboard where you can see your content.</p>
+<div class="d-flex justify-content-center p-3">
+  <div style="max-width: 800px; width: 100%;">
+    <!-- Centered Welcome Section -->
+    <div class="text-center mb-4">
+      <h1>Welcome, {{ user.username }}!</h1>
+      <p>This is your dashboard where you can see your content.</p>
+    </div>
 
-    <!-- Vertical stack for the containers -->
-    <div class="mt-4">
-      <!-- Recent Activity Card -->
-      <div class="card mb-3">
-        <div class="card-body">
-          <h3 class="card-title">Recent Activity</h3>
-          <p class="card-text">No recent activity yet.</p>
-        </div>
+    <!-- Cards (left-aligned) -->
+    <div class="card mb-3 text-start">
+      <div class="card-body">
+        <h3 class="card-title">Recent Activity</h3>
+        <p class="card-text">No recent activity yet.</p>
       </div>
+    </div>
 
-      <!-- Your Playlists Card -->
-      <div class="card mb-3">
-        <div class="card-body">
-          <h3 class="card-title">Your Playlists</h3>
-          <p class="card-text">No playlists available.</p>
-        </div>
+    <div class="card mb-3 text-start">
+      <div class="card-body">
+        <h3 class="card-title">Your Playlists</h3>
+        <p class="card-text">No playlists available.</p>
       </div>
     </div>
   </div>

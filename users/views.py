@@ -43,3 +43,4 @@ def profile_view(request):
 @login_required
 def settings_view(request):
     return render(request, "users/settings.html")
+

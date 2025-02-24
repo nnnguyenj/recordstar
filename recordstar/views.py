@@ -15,3 +15,9 @@ def add_item(request):
     if request.user.profile.account_type != 'L':
         return HttpResponseForbidden("You do not have permission to access this page.")
     return render(request, 'recordstar/add_item.html')
+
+# recordstar/views.py
+from django.shortcuts import render
+
+def dashboard_view(request):
+    return render(request, 'dashboard.html')
