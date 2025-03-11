@@ -15,12 +15,13 @@ class IndexView(generic.TemplateView):
 
 @login_required
 def update_profile_picture(request):
-    if request.method == 'POST' and request.FILES['profile_picture']:
+    if request.method == 'POST' and 'profile_picture' in request.FILES:
         profile = Profile.objects.get(user=request.user)
-        profile.profile_picture = request.FILES['profile_picture']
+        profile.image = request.FILES['profile_picture']
         profile.save()
         return redirect(reverse("index"))
-    return render(request, "recordstar/upload_picture.html")  # Render a page with the upload form
+
+    return render(request, "recordstar/upload_picture.html")
 
 @login_required
 def add_item(request):
