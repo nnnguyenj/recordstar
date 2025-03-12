@@ -159,7 +159,11 @@ AUTHENTICATION_BACKENDS = (
 
 LOGIN_REDIRECT_URL = '/recordstar/'
 LOGOUT_REDIRECT_URL = '/recordstar/'
+ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+ACCOUNT_SESSION_REMEMBER = True
 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 # SHERRIFF
 # Activate Django-Heroku.
 # Use this code to avoid the psycopg2 / django-heroku error!  

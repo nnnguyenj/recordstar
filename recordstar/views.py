@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidde
 from django.urls import reverse
 from django.views import generic
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth import update_session_auth_hash, authenticate, login
 
 # SHERRIFF: very basic index page created
 from users.models import Profile
@@ -19,7 +19,13 @@ def update_profile_picture(request):
         profile = Profile.objects.get(user=request.user)
         profile.image = request.FILES['profile_picture']
         profile.save()
-        return redirect(reverse("index"))
+
+        # Re-authenticate the user
+        user = authenticate(request, username=request.user.username)
+        if user:
+            login(request, user)
+
+        return redirect("/recordstar/")
 
     return render(request, "recordstar/upload_picture.html")
 

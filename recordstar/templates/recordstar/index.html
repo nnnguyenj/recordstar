@@ -25,6 +25,11 @@
                         src="{{ user.profile.image.url }}"
                     />
                 </div>
+                <form method="post" enctype="multipart/form-data" action="{% url 'update_profile_picture' %}">
+                    {% csrf_token %}
+                    <input type="file" name="profile_picture" accept="image/*">
+                    <button type="submit">Upload</button>
+                </form>
                 <h2>Welcome Librarian, {{ user.username }}</h2>
                 <p>You have librarian privileges. You can add new items and collections.</p>
                 <a href="{% url 'add_item' %}">Add New Item</a>
@@ -35,6 +40,11 @@
                         src="{{ user.profile.image.url }}"
                     />
                 </div>
+                <form method="post" enctype="multipart/form-data" action="{% url 'update_profile_picture' %}">
+                    {% csrf_token %}
+                    <input type="file" name="profile_picture" accept="image/*">
+                    <button type="submit">Upload</button>
+                </form>
                 <h2>Welcome Patron, {{ user.username }}</h2>
                 <p>You can browse and request to borrow items.</p>
             {% endif %}
