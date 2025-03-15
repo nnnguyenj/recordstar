@@ -18,8 +18,5 @@ PyJWT
 
 cryptography
 
-<<<<<<< HEAD
 django-bootstrap-v5
-=======
 Pillow
->>>>>>> d8b143303af8478ce3a1d77f9754d6ab89540735
