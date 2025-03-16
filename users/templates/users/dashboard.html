@@ -25,6 +25,23 @@
         <p class="card-text">No playlists available.</p>
       </div>
     </div>
+
+    {% if user.profile.account_type == "L" %}
+      <h2>Upgrade Patron Accounts</h2>
+      {% if patrons %}
+        <ul>
+          {% for patron in patrons %}
+            <li>
+              {{ patron.username }}
+              <!-- Link to upgrade the patron user; the URL uses the patron's id -->
+              <a href="{% url 'upgrade_user' patron.id %}">Upgrade to Librarian</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No patron users available for upgrade.</p>
+      {% endif %}
+    {% endif %}
   </div>
 </div>
 {% endblock %}
