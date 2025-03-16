@@ -2,7 +2,19 @@
 
 {% block title %}My Collection{% endblock %}
 
-{% block content %}
-  <h2>Your Collection</h2>
-  <p>This is a blank page for collections.</p>
-{% endblock %}
+<h2>Your Collection</h2>
+{% if records %}
+    <ul>
+        {% for record in records %}
+            <li>
+                <strong>{{ record.title }}</strong> by {{ record.artist }}<br>
+                Genre: {{ record.genre }} | Release Date: {{ record.release_date }} | Rating: {{ record.rating }}<br>
+                <p>{{ record.review }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You don't have any records in your collection yet. <a href="{% url 'add_record' %}">Add one now!</a></p>
+{% endif %}
+
+

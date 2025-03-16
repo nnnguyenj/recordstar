@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1','recordstar-a8de1855c54a.herokuapp.com'
 
 # Application definition
 
-SITE_ID=2
+SITE_ID=1
 
 INSTALLED_APPS = [
     'recordstar.apps.RecordstarConfig',
@@ -158,8 +158,8 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend"
 )
 
-LOGIN_REDIRECT_URL = '/recordstar/'
-LOGOUT_REDIRECT_URL = '/recordstar/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/'
 
 # SHERRIFF
 # Activate Django-Heroku.
