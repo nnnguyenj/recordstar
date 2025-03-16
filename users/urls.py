@@ -20,4 +20,5 @@ urlpatterns = [
     path("ratings/", ratings_view, name="ratings"),
     path("profile/", profile_view, name="profile"),
     path("settings/", settings_view, name="settings"),
+    path("upgrade_user/<int:user_id>/", views.upgrade_user_to_librarian, name="upgrade_user"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
