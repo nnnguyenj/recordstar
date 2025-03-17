@@ -23,5 +23,4 @@ urlpatterns = [
     path("recordstar/", include("recordstar.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("users.urls")),
-    path('dashboard/', include ("recordstar.urls")),
 ]

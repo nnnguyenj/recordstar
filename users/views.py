@@ -4,7 +4,7 @@ from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 
 def index_view(request):
-    return render(request, "users/index.html")
+    return render(request, "users/dashboard.html")
 
 def logout_view(request):
     logout(request)
