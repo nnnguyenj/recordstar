@@ -27,7 +27,6 @@
                 </div>
                 <h2>Welcome Librarian, {{ user.username }}</h2>
                 <p>You have librarian privileges. You can add new items and collections.</p>
-                <a href="{% url 'add_item' %}">Add New Item</a>
             {% else %}
                 <div class="media">
                     <img
@@ -38,6 +37,7 @@
                 <h2>Welcome Patron, {{ user.username }}</h2>
                 <p>You can browse and request to borrow items.</p>
             {% endif %}
+            <a href="{% url 'dashboard' %}"> Go to Dashboard </a>
             <a href="{% url 'account_logout' %}" class="logout_button"> Logout </a>
         </div>
     {% else %}

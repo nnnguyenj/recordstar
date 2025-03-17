@@ -4,5 +4,37 @@
 
 {% block content %}
   <h2>Your Collection</h2>
-  <p>This is a blank page for collections.</p>
+  <p>See your personal collections and playlists!</p>
+
+  <div class="mt-5">
+    <!-- Here we would typically list the user's CDs -->
+    <div class="row">
+      {% if cds %}
+        {% for cd in cds %}
+          <div class="col-md-4 mb-4">
+            <div class="card h-100">
+              {% if cd.cover_image %}
+                <img src="{{ cd.cover_image.url }}" class="card-img-top" alt="{{ cd.title }}">
+              {% else %}
+                <div class="card-img-top bg-light text-center py-5">No Image</div>
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">{{ cd.title }}</h5>
+                <p class="card-text">{{ cd.artist }}</p>
+                <p class="card-text"><small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small></p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-12 text-center">
+          <p>You don't have any CDs in your collection yet. Add some to get started!</p>
+        </div>
+      {% endif %}
+      <div class="mt-4">
+        <a href="{% url 'add_item' %}" class="btn btn-primary">Add New CD</a>
+      </div>    
+    </div>
+  </div>
+</div>
 {% endblock %}
