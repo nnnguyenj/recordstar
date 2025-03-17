@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from .models import Record
+from django.http import HttpResponse, HttpResponseForbidden
 
 def index_view(request):
+    return render(request, "users/dashboard.html")
     return render(request, "users/dashboard.html")
 
 def logout_view(request):
@@ -22,6 +25,7 @@ def google_login(request):
 @login_required
 def dashboard_view(request):
     context = {"user": request.user}
+    # If current user is a librarian, retrieve all patron users.
     if request.user.profile.account_type == 'L':
         patrons = User.objects.filter(profile__account_type='P')
         context["patrons"] = patrons
