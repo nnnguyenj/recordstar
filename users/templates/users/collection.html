@@ -2,19 +2,36 @@
 
 {% block title %}My Collection{% endblock %}
 
-<h2>Your Collection</h2>
-{% if records %}
-    <ul>
-        {% for record in records %}
-            <li>
-                <strong>{{ record.title }}</strong> by {{ record.artist }}<br>
-                Genre: {{ record.genre }} | Release Date: {{ record.release_date }} | Rating: {{ record.rating }}<br>
-                <p>{{ record.review }}</p>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>You don't have any records in your collection yet. <a href="{% url 'add_record' %}">Add one now!</a></p>
-{% endif %}
+{% block content %}
+    <div class="container mt-4">
+        <h2>Your Collection</h2>
 
+        <div class="mb-3">
+            <a href="{% url 'add_record' %}" class="btn btn-primary">Add Record</a>
+        </div>
 
+        {% if records %}
+            <div class="list-group">
+                {% for record in records %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ record.title }}</h5>
+                            <div>
+                                <small>Rating: {{ record.rating }}</small>
+                                <form method="post" action="{% url 'delete_record' record.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                        <p class="mb-1"><strong>{{ record.artist }}</strong></p>
+                        <p class="mb-1">Genre: {{ record.genre }} | Release Date: {{ record.release_date }}</p>
+                        <p class="mb-1">{{ record.review }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>You don't have any records in your collection yet. <a href="{% url 'add_record' %}">Add one now!</a></p>
+        {% endif %}
+    </div>
+{% endblock %}

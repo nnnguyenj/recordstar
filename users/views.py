@@ -1,17 +1,17 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
-from .forms import RecordForm
+from django.http import HttpResponse, HttpResponseForbidden
 from .models import Record
 
-
 def index_view(request):
-    return render(request, "users/index.html")
+    return render(request, "users/dashboard.html")
 
 def logout_view(request):
     logout(request)
-    return redirect("index")
+    return redirect("recordstar/")
 
 def google_login(request):
     if request.method == 'POST':
@@ -21,7 +21,11 @@ def google_login(request):
 
 @login_required
 def dashboard_view(request):
-    return render(request, "users/dashboard.html", {"user": request.user})
+    context = {"user": request.user}
+    if request.user.profile.account_type == 'L':
+        patrons = User.objects.filter(profile__account_type='P')
+        context["patrons"] = patrons
+    return render(request, "users/dashboard.html", context)
 
 @login_required
 def playlists_view(request):
@@ -34,21 +38,7 @@ def recent_activity_view(request):
 @login_required
 def collection_view(request):
     records = Record.objects.filter(user=request.user)
-    return render(request, "users/collection.html", {"records": records})
-
-@login_required
-def add_record_view(request):
-    if request.method == 'POST':
-        form = RecordForm(request.POST)
-        if form.is_valid():
-            record = form.save(commit=False)
-            record.user = request.user  #associate the record with the current user
-            record.save()
-            return redirect('collection')  #redirect to the collection page after saving
-    else:
-        form = RecordForm()
-
-    return render(request, "users/add_record.html", {'form': form})
+    return render(request, "users/collection.html", {'records': records})
 
 @login_required
 def ratings_view(request):
@@ -61,3 +51,52 @@ def profile_view(request):
 @login_required
 def settings_view(request):
     return render(request, "users/settings.html")
+
+@login_required
+def upgrade_user_to_librarian(request, user_id):
+    if request.user.profile.account_type != 'L':
+        return HttpResponseForbidden("Only librarians can upgrade user accounts.")
+    
+    target_user = get_object_or_404(User, id=user_id)
+    
+    if target_user.profile.account_type != 'P':
+        return HttpResponse("Target user is either already a librarian or not eligible for upgrade.", status=400)
+    
+    if request.method == 'POST':
+        target_user.profile.account_type = 'L'
+        target_user.profile.save()
+        return HttpResponse("User successfully upgraded to librarian.")
+    else:
+        return render(request, 'users/confirm_upgrade.html', {'target_user': target_user})
+
+@login_required
+def add_record(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        artist = request.POST.get('artist')
+        genre = request.POST.get('genre')
+        release_date = request.POST.get('release_date')
+        rating = request.POST.get('rating')
+        review = request.POST.get('review')
+
+        Record.objects.create(
+            user=request.user,
+            title=title,
+            artist=artist,
+            genre=genre,
+            release_date=release_date,
+            rating=rating,
+            review=review,
+        )
+        return redirect('collection')
+
+    return render(request, 'users/add_record.html')
+
+@login_required
+def delete_record_view(request, record_id):
+    record = get_object_or_404(Record, id=record_id, user=request.user)
+    if request.method == 'POST':
+        record.delete()
+        return redirect('collection')
+    else:
+        return redirect('collection') #Or you could render a confirmation page.
