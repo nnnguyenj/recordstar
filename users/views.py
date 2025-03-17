@@ -1,11 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
+from .models import Record
+from django.http import HttpResponse, HttpResponseForbidden
 
 def index_view(request):
+    return render(request, "users/dashboard.html")
     return render(request, "users/dashboard.html")
 
 def logout_view(request):
@@ -37,7 +41,8 @@ def recent_activity_view(request):
 
 @login_required
 def collection_view(request):
-    return render(request, "users/collection.html")
+    records = Record.objects.filter(user=request.user)
+    return render(request, "users/collection.html", {'records': records})
 
 @login_required
 def ratings_view(request):
@@ -53,22 +58,49 @@ def settings_view(request):
 
 @login_required
 def upgrade_user_to_librarian(request, user_id):
-    # Ensure the current user is a librarian.
     if request.user.profile.account_type != 'L':
         return HttpResponseForbidden("Only librarians can upgrade user accounts.")
     
-    # Retrieve the target user.
     target_user = get_object_or_404(User, id=user_id)
     
-    # Check that the target user's profile is set as patron ('P').
     if target_user.profile.account_type != 'P':
         return HttpResponse("Target user is either already a librarian or not eligible for upgrade.", status=400)
     
     if request.method == 'POST':
-        # Perform the upgrade.
         target_user.profile.account_type = 'L'
         target_user.profile.save()
         return HttpResponse("User successfully upgraded to librarian.")
     else:
-        # Render a confirmation page before proceeding.
         return render(request, 'users/confirm_upgrade.html', {'target_user': target_user})
+
+@login_required
+def add_record(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        artist = request.POST.get('artist')
+        genre = request.POST.get('genre')
+        release_date = request.POST.get('release_date')
+        rating = request.POST.get('rating')
+        review = request.POST.get('review')
+
+        Record.objects.create(
+            user=request.user,
+            title=title,
+            artist=artist,
+            genre=genre,
+            release_date=release_date,
+            rating=rating,
+            review=review,
+        )
+        return redirect('collection')
+
+    return render(request, 'users/add_record.html')
+
+@login_required
+def delete_record_view(request, record_id):
+    record = get_object_or_404(Record, id=record_id, user=request.user)
+    if request.method == 'POST':
+        record.delete()
+        return redirect('collection')
+    else:
+        return redirect('collection') #Or you could render a confirmation page.
