@@ -10,7 +10,6 @@ from django.http import HttpResponse, HttpResponseForbidden
 
 def index_view(request):
     return render(request, "users/dashboard.html")
-    return render(request, "users/dashboard.html")
 
 def logout_view(request):
     logout(request)
