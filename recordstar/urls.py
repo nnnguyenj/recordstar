@@ -7,7 +7,7 @@ urlpatterns = [
     # Example URL pattern:
     # path('example/', views.example_view, name='example'),
     path("", views.IndexView.as_view(), name="index"),
-    path("add_item/", views.add_item, name="add_item"),
+    path("add_item/", views.add_item_view, name="add_item"),
     path('dashboard/', dashboard_view, name='dashboard'),
 
 ]

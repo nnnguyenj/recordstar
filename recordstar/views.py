@@ -1,7 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.views import generic
 from django.contrib.auth.decorators import login_required
+from .models import CD
 
 
 # SHERRIFF: very basic index page created
@@ -10,11 +11,21 @@ class IndexView(generic.TemplateView):
 # Create your views here.
 
 @login_required
-def add_item(request):
-    # Only allow librarians to access this view.
+def add_item_view(request):
     if request.user.profile.account_type != 'L':
         return HttpResponseForbidden("You do not have permission to access this page.")
-    return render(request, 'recordstar/add_item.html')
+    if request.method == 'POST':
+        new_cd = CD.objects.create(
+            title=request.POST.get('title'),
+            artist=request.POST.get('artist'),
+            release_year=request.POST.get('release_year'),
+            genre=request.POST.get('genre'),
+            description=request.POST.get('description'),
+            cover_image=request.FILES.get('cover_image'),
+            owner=request.user
+        )
+        return redirect('collection')
+    return render(request, "recordstar/add_item.html")
 
 # recordstar/views.py
 from django.shortcuts import render

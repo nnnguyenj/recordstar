@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
+from recordstar.models import CD
 
 def index_view(request):
     return render(request, "users/dashboard.html")
@@ -37,7 +38,8 @@ def recent_activity_view(request):
 
 @login_required
 def collection_view(request):
-    return render(request, "users/collection.html")
+    cds = CD.objects.filter(owner=request.user)
+    return render(request, "users/collection.html", {"cds": cds})
 
 @login_required
 def ratings_view(request):
