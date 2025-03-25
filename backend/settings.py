@@ -166,6 +166,9 @@ AUTHENTICATION_BACKENDS = (
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/recordstar/'
 
+ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+ACCOUNT_SESSION_REMEMBER = True
+
 # AWS S3
 AWS_ACCESS_KEY_ID = os.getenv('AWS_S3_ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_S3_SECRET_ACCESS_KEY')
@@ -186,6 +189,8 @@ STORAGES = {
     },
 }
 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 # SHERRIFF
 # Activate Django-Heroku.
 # Use this code to avoid the psycopg2 / django-heroku error!  

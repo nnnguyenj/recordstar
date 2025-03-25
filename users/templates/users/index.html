@@ -10,7 +10,7 @@
 <body>
     <div>
         <h2> Google Login </h2>
-        <form method="POST" action="{% url 'google_login' %}">
+        <form method="POST" action="{% provider_login_url 'google' %}">
             {% csrf_token %}
             <button type="submit">Login With Google</button>
         </form>
