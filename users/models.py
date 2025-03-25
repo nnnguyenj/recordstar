@@ -16,4 +16,16 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.get_account_type_display()})"
+    
+class Record(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  #link to user who owns the collection
+    title = models.CharField(max_length=255)
+    artist = models.CharField(max_length=255)
+    genre = models.CharField(max_length=100)
+    release_date = models.DateField()
+    rating = models.IntegerField()  #1-10 scale
+    review = models.TextField()
+
+    def __str__(self):
+        return f"{self.title} by {self.artist}"
 
