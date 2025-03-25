@@ -3,7 +3,6 @@
 {% block title %}My Collection{% endblock %}
 
 {% block content %}
-<<<<<<< HEAD
 <div class="text-center">
   <h2>Your Collection</h2>
   <p>See your personal collections and playlists!</p>
@@ -38,37 +37,4 @@
     </div>
   </div>
 </div>
-=======
-    <div class="container mt-4">
-        <h2>Your Collection</h2>
-
-        <div class="mb-3">
-            <a href="{% url 'add_record' %}" class="btn btn-primary">Add Record</a>
-        </div>
-
-        {% if records %}
-            <div class="list-group">
-                {% for record in records %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">{{ record.title }}</h5>
-                            <div>
-                                <small>Rating: {{ record.rating }}</small>
-                                <form method="post" action="{% url 'delete_record' record.id %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                </form>
-                            </div>
-                        </div>
-                        <p class="mb-1"><strong>{{ record.artist }}</strong></p>
-                        <p class="mb-1">Genre: {{ record.genre }} | Release Date: {{ record.release_date }}</p>
-                        <p class="mb-1">{{ record.review }}</p>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>You don't have any records in your collection yet. <a href="{% url 'add_record' %}">Add one now!</a></p>
-        {% endif %}
-    </div>
->>>>>>> suhani
 {% endblock %}
