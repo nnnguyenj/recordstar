@@ -18,22 +18,16 @@
             {% comment %}
             Check the user's profile to determine their account type.
             {% endcomment %}
+            <div class="media">
+                <img
+                    class="account_img"
+                    src="{{ user.profile.image.url }}"
+                />
+            </div>
             {% if user.profile.account_type == 'L' %}
-                <div class="media">
-                    <img
-                        class="rounded-circle account-img"
-                        src="{{ user.profile.image.url }}"
-                    />
-                </div>
                 <h2>Welcome Librarian, {{ user.username }}</h2>
                 <p>You have librarian privileges. You can add new items and collections.</p>
             {% else %}
-                <div class="media">
-                    <img
-                        class="rounded-circle account-img"
-                        src="{{ user.profile.image.url }}"
-                    />
-                </div>
                 <h2>Welcome Patron, {{ user.username }}</h2>
                 <p>You can browse and request to borrow items.</p>
             {% endif %}

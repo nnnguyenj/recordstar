@@ -11,14 +11,9 @@ class IndexView(generic.TemplateView):
 # Create your views here.
 
 @login_required
-def add_item(request):
-    # Only allow librarians to access this view.
+def add_item_view(request):
     if request.user.profile.account_type != 'L':
         return HttpResponseForbidden("You do not have permission to access this page.")
-    return render(request, 'recordstar/add_item.html')
-
-@login_required
-def add_item_view(request):
     if request.method == 'POST':
         new_cd = CD.objects.create(
             title=request.POST.get('title'),
