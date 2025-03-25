@@ -24,3 +24,5 @@ Pillow
 # aws s3:
 django-storages
 boto3
+
+python-dotenv
