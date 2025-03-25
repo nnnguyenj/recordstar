@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center p-3">
+  <div style="max-width: 800px; width: 100%;">
+    <!-- Centered Welcome Section -->
+    <div class="text-center mb-4">
+      <h1>Welcome, {{ user.username }}!</h1>
+      <p>This is your dashboard where you can see your content.</p>
+    </div>
+
+    <!-- Cards (left-aligned) -->
+    <div class="card mb-3 text-start">
+      <div class="card-body">
+        <h3 class="card-title">Recent Activity</h3>
+        <p class="card-text">No recent activity yet.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3 text-start">
+      <div class="card-body">
+        <h3 class="card-title">Your Playlists</h3>
+        <p class="card-text">No playlists available.</p>
+      </div>
+    </div>
+
+    {% if user.profile.account_type == "L" %}
+      <h2>Upgrade Patron Accounts</h2>
+      {% if patrons %}
+        <ul>
+          {% for patron in patrons %}
+            <li>
+              {{ patron.username }}
+              <!-- Link to upgrade the patron user; the URL uses the patron's id -->
+              <a href="{% url 'upgrade_user' patron.id %}">Upgrade to Librarian</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No patron users available for upgrade.</p>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

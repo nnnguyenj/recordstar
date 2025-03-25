@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Upgrade</title>
+</head>
+<body>
+    <h2>Confirm Upgrade</h2>
+    <p>Are you sure you want to upgrade user <strong>{{ target_user.username }}</strong> to librarian?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Confirm Upgrade</button>
+    </form>
+    <a href="{% url 'dashboard' %}">Cancel</a>
+</body>
+</html>

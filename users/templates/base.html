@@ -1,0 +1,159 @@
+{% load bootstrap5 static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}RecordStar{% endblock %}</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  
+  <!-- Bootstrap CSS using django-bootstrap5 -->
+  {% bootstrap_css %}
+  
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+    }
+    /* Sidebar styling */
+    .sidebar {
+      background-color: #ebeff1;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .sidebar h2 {
+      padding: 0.5rem;
+      font-weight: bold;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding-left: 20px;
+    }
+    .sidebar li {
+      margin-bottom: 4px;
+    }
+    .sidebar li a {
+      text-decoration: none;
+      color: #333;
+    }
+    .sidebar li a:hover {
+      color: #d00;
+    }
+    /* Search bar custom styles */
+    .search-container {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .sidebar ul.nav.flex-column {
+      margin-bottom: 0;      /* Remove bottom margin if any */
+      padding-left: 0;       /* Remove extra left padding */
+      gap: 0;                /* If your Bootstrap version supports gap directly in CSS */
+    }
+    
+    .sidebar .nav-item {
+      margin-bottom: 2px !important; /* Force a smaller margin between items */
+    }
+    
+    .sidebar .nav-link {
+      padding-top: 2px !important;   /* Reduce vertical padding */
+      padding-bottom: 2px !important;
+      line-height: 1.2 !important;   /* Tighten line spacing if desired */
+    }
+
+    .sidebar h2.h4 {
+      font-size: 20px !important; /* Make it same size as h4 */
+      font-weight: bold !important; /* Keep h2 boldness */
+  }  
+    
+  .search-container .fa-search {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 16px;
+  }
+  .search-container input[type="text"] {
+    padding-left: 36px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 sidebar">
+        <h2>Search</h2>
+        <div class="search-container">
+          <form action="/search" method="GET">
+            <i class="fa fa-search"></i>
+            <input type="text" name="search" placeholder="Search..." class="form-control">
+          </form>
+        </div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'playlists' %}">Playlists</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'recent_activity' %}">Recent Activity</a></li>
+        </ul>
+        
+        <h2 class="mt-4 h4">Your Library</h2>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="{% url 'collection' %}">Your Collection</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'ratings' %}">Your Ratings</a></li>
+        </ul>
+        
+        <h2 class="mt-4 h4">User Settings</h2>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'settings' %}">Settings</a></li>
+        </ul>
+        
+        <h2 class="mt-4 h4">Request Center</h2>
+        <!-- Additional items if needed -->
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 col-lg-10 d-flex flex-column" style="background-color: #fcfcfc;">
+        <!-- Top-right user info -->
+        <div class="d-flex justify-content-end p-3">
+          <div class="dropdown">
+            <a class="dropdown-toggle text-decoration-none" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item" href="#">Profile</a></li>
+              <li><a class="dropdown-item" href="#">Settings</a></li>
+              <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Central content area -->
+        <div class="flex-fill p-3">
+          {% block content %}{% endblock %}
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center p-3">
+          <p>&copy; 2025 RecordStar</p>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS using django-bootstrap5 -->
+  {% bootstrap_javascript %}
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
