@@ -163,7 +163,7 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend"
 )
 
-LOGIN_REDIRECT_URL = '/recordstar/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/recordstar/'
 
 # AWS S3

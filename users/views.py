@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from recordstar.models import CD
 
 def index_view(request):
-    return render(request, "users/index.html")
+    return render(request, "users/dashboard.html")
 
 def logout_view(request):
     logout(request)
