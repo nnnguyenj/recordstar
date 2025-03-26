@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
-from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from recordstar.models import CD
 from .models import Record
-from django.http import HttpResponse, HttpResponseForbidden
+from .models import Profile
 
 def index_view(request):
     return render(request, "users/dashboard.html")
@@ -104,3 +103,24 @@ def delete_record_view(request, record_id):
         return redirect('collection')
     else:
         return redirect('collection') #Or you could render a confirmation page.
+    
+@login_required
+def add_friend(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    request.user.profile.friends.add(target_user.profile)
+    return redirect('friends')
+
+@login_required
+def remove_friend(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    request.user.profile.friends.remove(target_user.profile)
+    return redirect('friends')
+
+@login_required
+def friends_view(request):
+    all_users = User.objects.exclude(id=request.user.id)
+    friends = request.user.profile.friends.all()
+    return render(request, "users/friends.html", {
+        "friends": friends,
+        "all_users": all_users,
+    })

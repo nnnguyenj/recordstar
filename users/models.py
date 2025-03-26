@@ -13,6 +13,7 @@ class Profile(models.Model):
     account_type = models.CharField(max_length=1, choices=ACCOUNT_TYPE_CHOICES, default='P')
     image = models.ImageField(default='profile_pics/default.jpg', upload_to='profile_pics/')
     created_at = models.DateTimeField(auto_now_add=True)
+    friends = models.ManyToManyField("self", symmetrical=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} ({self.get_account_type_display()})"

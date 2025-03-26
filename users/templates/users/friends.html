@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}My Friends{% endblock %}
+{% block content %}
+
+<h2>My Friends</h2>
+{% if friends %}
+  <ul>
+    {% for friend in friends %}
+      <li>
+        {{ friend.user.username }}
+        <form action="{% url 'remove_friend' friend.user.id %}" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit">Remove</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>You don't have any friends yet.</p>
+{% endif %}
+
+<hr>
+
+<h3>Find New Friends</h3>
+<ul>
+  {% for user in all_users %}
+    {% if user.profile not in friends %}
+      <li>
+        {{ user.username }}
+        <form action="{% url 'add_friend' user.id %}" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit">Add</button>
+        </form>
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+
+{% endblock %}
