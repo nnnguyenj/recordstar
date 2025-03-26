@@ -118,7 +118,7 @@ def remove_friend(request, user_id):
 
 @login_required
 def friends_view(request):
-    all_users = User.objects.exclude(id=request.user.id)
+    all_users = User.objects.exclude(id=request.user.id).exclude(is_superuser=True)
     friends = request.user.profile.friends.all()
     return render(request, "users/friends.html", {
         "friends": friends,
