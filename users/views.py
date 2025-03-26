@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from recordstar.models import CD
 from .models import Record
 from .models import Profile
+from .models import FriendActivity
 
 def index_view(request):
     return render(request, "users/dashboard.html")
@@ -36,7 +37,15 @@ def playlists_view(request):
 
 @login_required
 def recent_activity_view(request):
-    return render(request, "users/recent_activity.html")
+    from .models import Record, FriendActivity
+    
+    recent_friends = FriendActivity.objects.filter(user=request.user).order_by('-timestamp')[:5]
+    recent_records = Record.objects.filter(user=request.user).order_by('-created_at')[:5]
+    #later: recent_ratings = Rating.objects.filter(user=request.user).order_by('-timestamp')[:5]
+    return render(request, "users/recent_activity.html", {
+        "recent_friends": recent_friends,
+        "recent_records": recent_records,
+    })
 
 @login_required
 def collection_view(request):
@@ -108,6 +117,8 @@ def delete_record_view(request, record_id):
 def add_friend(request, user_id):
     target_user = get_object_or_404(User, id=user_id)
     request.user.profile.friends.add(target_user.profile)
+    #log recent friend activity
+    FriendActivity.objects.create(user=request.user, friend=target_user)
     return redirect('friends')
 
 @login_required
