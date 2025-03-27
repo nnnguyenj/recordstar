@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
-from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from recordstar.models import CD
 from .models import Record
-from django.http import HttpResponse, HttpResponseForbidden
+from .models import Profile
+from .models import FriendActivity
 
 def index_view(request):
     return render(request, "users/dashboard.html")
@@ -37,7 +37,15 @@ def playlists_view(request):
 
 @login_required
 def recent_activity_view(request):
-    return render(request, "users/recent_activity.html")
+    from .models import Record, FriendActivity
+    
+    recent_friends = FriendActivity.objects.filter(user=request.user).order_by('-timestamp')[:5]
+    recent_records = Record.objects.filter(user=request.user).order_by('-created_at')[:5]
+    #later: recent_ratings = Rating.objects.filter(user=request.user).order_by('-timestamp')[:5]
+    return render(request, "users/recent_activity.html", {
+        "recent_friends": recent_friends,
+        "recent_records": recent_records,
+    })
 
 @login_required
 def collection_view(request):
@@ -104,3 +112,26 @@ def delete_record_view(request, record_id):
         return redirect('collection')
     else:
         return redirect('collection') #Or you could render a confirmation page.
+    
+@login_required
+def add_friend(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    request.user.profile.friends.add(target_user.profile)
+    #log recent friend activity
+    FriendActivity.objects.create(user=request.user, friend=target_user)
+    return redirect('friends')
+
+@login_required
+def remove_friend(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    request.user.profile.friends.remove(target_user.profile)
+    return redirect('friends')
+
+@login_required
+def friends_view(request):
+    all_users = User.objects.exclude(id=request.user.id).exclude(is_superuser=True)
+    friends = request.user.profile.friends.all()
+    return render(request, "users/friends.html", {
+        "friends": friends,
+        "all_users": all_users,
+    })
