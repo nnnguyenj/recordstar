@@ -34,8 +34,6 @@ def update_profile_picture(request):
 
 @login_required
 def add_item_view(request):
-    if request.user.profile.account_type != 'L':
-        return HttpResponseForbidden("You do not have permission to access this page.")
     if request.method == 'POST':
         new_cd = CD.objects.create(
             title=request.POST.get('title'),
