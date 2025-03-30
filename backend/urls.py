@@ -17,8 +17,15 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from allauth.account.views import LoginView, SignupView
 
 urlpatterns = [
+    # Standard login page:
+    path('accounts/login/', LoginView.as_view(template_name='account/login.html'), name='account_login'),
+    # Signup page:
+    path('accounts/signup/', SignupView.as_view(template_name='account/signup.html'), name='account_signup'),
+    # Custom Google login page:
+    path('google/login/', LoginView.as_view(template_name='account/google_login.html'), name='google_login'),
     path("admin/", admin.site.urls),
     path("recordstar/", include("recordstar.urls")),
     path("accounts/", include("allauth.urls")),
