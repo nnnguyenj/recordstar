@@ -8,6 +8,8 @@ from recordstar.models import CD
 from .models import Record
 from .models import Profile
 from .models import FriendActivity
+from .models import Rating
+from .forms import RatingForm
 
 def index_view(request):
     return render(request, "users/dashboard.html")
@@ -54,7 +56,21 @@ def collection_view(request):
 
 @login_required
 def ratings_view(request):
-    return render(request, "users/ratings.html")
+    ratings = Rating.objects.filter(user=request.user).order_by('-created_at')
+    if request.method == 'POST':
+        form = RatingForm(request.POST)
+        if form.is_valid():
+            rating = form.save(commit=False)
+            rating.user = request.user
+            rating.save()
+            return redirect('ratings')
+    else:
+        form = RatingForm()
+    context = {
+        'ratings': ratings,
+        'form': form,
+    }
+    return render(request, 'users/ratings.html', context)
 
 @login_required
 def profile_view(request):
