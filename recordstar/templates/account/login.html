@@ -28,6 +28,96 @@
       body {
         font-family: 'Open Sans', sans-serif;
       }
+      .form-container {
+        max-width: 350px;
+        width: 100%;
+      }
+    
+      .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+      }
+    
+      .form-control {
+        border: none;
+        border-bottom: 1px solid #ccc;
+        border-radius: 0;
+        box-shadow: none;
+        padding-left: 0;
+        font-size: 0.95rem;
+      }
+    
+      .form-control:focus {
+        border-color: #000;
+        box-shadow: none;
+      }
+    
+      .form-divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        position: relative;
+        font-size: 0.85rem;
+        color: #888;
+      }
+    
+      .form-divider::before,
+      .form-divider::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 40%;
+        height: 1px;
+        background-color: #ddd;
+      }
+    
+      .form-divider::before {
+        left: 0;
+      }
+    
+      .form-divider::after {
+        right: 0;
+      }
+    
+      .form-footer {
+        font-size: 0.85rem;
+        color: #666;
+        text-align: center;
+        margin-top: 1.5rem;
+      }
+    
+      .form-footer a {
+        text-decoration: underline;
+        font-weight: 600;
+      }
+    
+      .form-check-label {
+        font-size: 0.85rem;
+      }
+    
+      .btn-dark {
+        background-color: #000;
+        color: #fff;
+        border-radius: 8px;
+        padding: 0.6rem 0;
+        font-weight: 600;
+      }
+    
+      .btn-dark:hover {
+        background-color: #222;
+      }
+    
+      .google-btn {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
     </style>
 
 </head>
@@ -58,53 +148,76 @@
     <div class="container-fluid vh-100">
       <div class="row h-100">
         <!-- Left column: Welcome message & login options -->
-        <div class="col-md-6 d-flex flex-column justify-content-center align-items-center p-5">
-          <h2 class="mb-4">Welcome Back!</h2>
-          <div class="d-flex align-items-center mb-4">
-            <span>New to RecordStar?</span>
-            <a href="{% url 'account_signup' %}" class="ms-2">Create an account</a>
-          </div>
+        <div class="col-md-6 position-relative d-flex p-5">
+
+           <!-- Logo in top-left corner -->
+        <img 
+            src="{% static 'images/rs logo design.png' %}" 
+            alt="Logo" 
+            class="position-absolute top-0 start-0 m-4" 
+            style="height: 37px; z-index: 0;">
           
-          <!-- If you want a username/password form, uncomment: -->
-          <form method="post" action="{% url 'account_login' %}">
-            {% csrf_token %}
-            <!-- Username field -->
-            <div class="mb-3">
-              <label for="id_username" class="form-label">Username</label>
-              <input type="text" name="login" class="form-control" id="id_username" placeholder="Enter your username" required>
-            </div>
+            <div class="ms-auto mt-5 form-container" style="width: 100%; max-width: 350px;">
+              <!-- Header -->
+              <h2 class="mb-2 fw-bold text-center">Welcome Back!</h2>
+              <p class="text-muted text-center mb-4">Please enter your login details.</p>
             
-            <!-- Password field -->
-            <div class="mb-3">
-              <label for="id_password" class="form-label">Password</label>
-              <input type="password" name="password" class="form-control" id="id_password" placeholder="Enter your password" required>
-            </div>
-          
-            <!-- Forgot password link below the password field -->
-            <div class="mb-3">
-              <a href="{% url 'account_reset_password' %}" class="text-muted">
-                Forgot your password?
+              <!-- Google login -->
+              <a href="{% provider_login_url 'google' %}?next=/dashboard/" class="btn btn-outline-secondary w-100 mb-3 d-flex align-items-center justify-content-center" style="border-radius: 8px;">
+                <i class="bi bi-google me-2"></i> Sign in with Google
               </a>
+            
+              <!-- Divider -->
+              <div class="text-muted text-center my-3" style="position: relative; font-size: 0.85rem;">
+                <span style="background: #fff; position: relative; z-index: 1; padding: 0 0.75rem;">or</span>
+                <hr style="position: absolute; top: 50%; left: 0; right: 0; z-index: 0; border-top: 1px solid #dee2e6;">
+              </div>
+            
+              <!-- Login form -->
+              <form method="post" action="{% url 'account_login' %}">
+                {% csrf_token %}
+            
+                <!-- Username field -->
+                <div class="mb-3">
+                  <label for="id_username" class="form-label">Username</label>
+                  <input type="text" name="login" class="form-control border-0 border-bottom rounded-0 px-0" id="id_username" placeholder="Enter your username" required>
+                </div>
+            
+                <!-- Password field -->
+                <div class="mb-3">
+                  <label for="id_password" class="form-label">Password</label>
+                  <input type="password" name="password" class="form-control border-0 border-bottom rounded-0 px-0" id="id_password" placeholder="Enter your password" required>
+                </div>
+            
+                <!-- Forgot password -->
+                <div class="d-flex justify-content-end mb-3">
+                  <a href="{% url 'account_reset_password' %}" class="text-muted" style="font-size: 0.85rem;">
+                    Forgot your password?
+                  </a>
+                </div>
+            
+                <!-- Sign in button -->
+                <button type="submit" class="btn btn-dark w-100 mb-3" style="border-radius: 8px;">Sign In</button>
+              </form>
+            
+              <!-- Footer -->
+              <div class="text-center" style="font-size: 0.9rem;">
+                <span>New to RecordStar?</span>
+                <a href="{% url 'account_signup' %}" class="ms-1" style="text-decoration: underline;">Create an account</a>
+              </div>
             </div>
-          
-            <!-- Sign in button -->
-            <button type="submit" class="btn btn-primary w-100 mb-3">Sign In</button>
-          
-            <!-- Social login (optional) -->
-            <a href="{% provider_login_url 'google' %}?next=/dashboard/"
-               class="btn btn-outline-primary w-100">
-              <i class="bi bi-google"></i> Sign in with Google
-            </a>
-          </form>
-          
-        </div>
+          </div> 
+            
+
 
         <!-- Right column: Decorative image or design -->
+        <!-- style="style="max-height: 60%;"-->
+      
         <div class="col-md-6 d-none d-md-flex justify-content-center align-items-center" style="background-color: #ffffff;">
-            <img src="{% static 'images/recordstar_logo2.webp' %}" 
+            <img src="{% static 'images/recordstar_logo9.jpg' %}" 
             alt="Decorative Image" 
             class="img-fluid " 
-            style="max-height: 70%;">
+            style="max-height: 97vh; max-width: 100%; object-fit: contain;">
 
         </div>
       </div>
