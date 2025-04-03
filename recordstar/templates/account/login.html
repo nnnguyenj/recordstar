@@ -102,11 +102,7 @@
         padding: 0.6rem 0;
         font-weight: 600;
       }
-    
-      .btn-dark:hover {
-        background-color: #222;
-      }
-    
+  
       .google-btn {
         border: 1px solid #ccc;
         border-radius: 8px;
@@ -118,6 +114,15 @@
         justify-content: center;
         gap: 0.5rem;
       }
+
+      .link-hover {
+        transition: color 0.2s ease;
+      }
+      
+      .link-hover:hover {
+        color: #AC46A1 !important;
+      }      
+    
     </style>
 
 </head>
@@ -190,11 +195,11 @@
                 </div>
             
                 <!-- Forgot password -->
-                <div class="d-flex justify-content-end mb-3">
-                  <a href="{% url 'account_reset_password' %}" class="text-muted" style="font-size: 0.85rem;">
-                    Forgot your password?
-                  </a>
-                </div>
+               <div class="d-flex justify-content-end mb-3">
+                 <a href="{% url 'account_reset_password' %}" class="link-hover text-muted" style="font-size: 0.85rem;">
+                   Forgot your password?
+                 </a>
+               </div>
             
                 <!-- Sign in button -->
                 <button type="submit" class="btn btn-dark w-100 mb-3" style="border-radius: 8px;">Sign In</button>
@@ -203,7 +208,9 @@
               <!-- Footer -->
               <div class="text-center" style="font-size: 0.9rem;">
                 <span>New to RecordStar?</span>
-                <a href="{% url 'account_signup' %}" class="ms-1" style="text-decoration: underline;">Create an account</a>
+                <a href="{% url 'account_signup' %}" class="link-hover ms-1" style="color: #AC46A1; text-decoration: underline;">
+                  Create an account
+                </a>
               </div>
             </div>
           </div>
