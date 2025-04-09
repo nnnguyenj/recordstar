@@ -14,4 +14,5 @@ urlpatterns = [
     path("delete_cd/<int:cd_id>/", views.delete_cd_view, name="delete_cd"),
     path('dashboard/', dashboard_view, name='dashboard'),
     path("update_picture/", views.update_profile_picture, name='update_profile_picture'),
+    path("search_cd/", views.search_cd_by_code, name="search_cd"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

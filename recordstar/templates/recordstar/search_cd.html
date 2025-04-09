@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search CD</title>
+</head>
+<body>
+    <h2>Find a CD by Unique Code</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="unique_code">Enter Unique Code:</label>
+        <input type="text" name="unique_code" id="unique_code" required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

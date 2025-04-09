@@ -6,6 +6,7 @@ from django.views import generic
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash, authenticate, login
 from .models import CD
+from django.contrib import messages
 
 # SHERRIFF: very basic index page created
 from users.models import Profile
@@ -77,6 +78,17 @@ def delete_cd_view(request, cd_id):
 
     return render(request, "recordstar/confirm_delete.html", {"cd": cd})
 
+@login_required
+def search_cd_by_code(request):
+    if request.method == 'POST':
+        code = request.POST.get('unique_code').strip().upper()
+        try:
+            cd = CD.objects.get(unique_code=code, owner=request.user)
+            return render(request, 'recordstar/cd_detail.html', {'cd': cd})
+        except CD.DoesNotExist:
+            messages.error(request, "No CD found with that code.")
+
+    return render(request, 'recordstar/search_cd.html')
 # recordstar/views.py
 from django.shortcuts import render
 

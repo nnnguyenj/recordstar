@@ -4,16 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Item</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 <body>
     <h2>Add a New CD</h2>
-    <div>
-        <button id="startScanner">Scan a CD</button>
-        <button id="retryScanner" style="display: none;">Retry Scan</button>
-        <video id="scanner" style="width: 100%; max-height: 300px; display: none;"></video>
-        <p id="barcodeResult">Scanning not yet implemented.</p>
-    </div>
+
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
       <div>
@@ -42,49 +36,5 @@
       </div>
       <button type="submit">Add CD</button>
     </form>
-
-    <!-- Scanner Script -->
-    <script>
-        function startQuagga() {
-            let scanner = document.getElementById("scanner");
-            scanner.style.display = "block"; // Show scanner preview
-            document.getElementById("retryScanner").style.display = "none"; // Hide retry button
-
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: scanner
-                },
-                decoder: {
-                    readers: ["ean_reader"] // Supports EAN-13 barcodes (common for CDs)
-                }
-            }, function (err) {
-                if (err) {
-                    console.error("Quagga init failed:", err);
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onDetected(function (data) {
-                let barcode = data.codeResult.code;
-                document.getElementById("barcodeResult").textContent = "Barcode: " + barcode;
-
-                // Autofill barcode into the title input
-                document.getElementById("title").value = barcode;
-
-                Quagga.stop(); // Stop scanner after detection
-                scanner.style.display = "none"; // Hide scanner preview
-                document.getElementById("retryScanner").style.display = "inline-block"; // Show retry button
-            });
-        }
-
-        document.getElementById("startScanner").addEventListener("click", startQuagga);
-
-        document.getElementById("retryScanner").addEventListener("click", function () {
-            startQuagga();
-        });
-    </script>
 </body>
 </html>

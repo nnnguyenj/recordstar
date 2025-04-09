@@ -22,6 +22,7 @@
                 <h5 class="card-title">{{ cd.title }}</h5>
                 <p class="card-text">{{ cd.artist }}</p>
                 <p class="card-text"><small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small></p>
+                <p>Code: {{ cd.unique_code }}</p>
 
                 <a href="{% url 'edit_cd' cd.id %}" class="btn btn-warning">Edit</a>
                 <a href="{% url 'delete_cd' cd.id %}" class="btn btn-danger">Delete</a>
