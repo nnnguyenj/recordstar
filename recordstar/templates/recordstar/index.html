@@ -20,7 +20,7 @@
             {% endcomment %}
             <div class="media">
                 <img
-                    class="rounded-circle account-img"
+                    class="account_img"
                     src="{{ user.profile.image.url }}"
                 />
             </div>
@@ -31,7 +31,6 @@
                     <button type="submit">Upload</button>
                 </form>
                 <h2>Welcome Librarian, {{ user.username }}</h2>
-                <p>You have librarian privileges. You can add new items and collections.</p>
             {% else %}
                 <form method="post" enctype="multipart/form-data" action="{% url 'update_profile_picture' %}">
                     {% csrf_token %}
@@ -39,7 +38,6 @@
                     <button type="submit">Upload</button>
                 </form>
                 <h2>Welcome Patron, {{ user.username }}</h2>
-                <p>You can browse and request to borrow items.</p>
             {% endif %}
             <a href="{% url 'dashboard' %}"> Go to Dashboard </a>
             <a href="{% url 'account_logout' %}" class="logout_button"> Logout </a>
