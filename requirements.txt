@@ -26,3 +26,6 @@ django-storages
 boto3
 
 python-dotenv
+
+# for postgres
+psycopg2-binary
