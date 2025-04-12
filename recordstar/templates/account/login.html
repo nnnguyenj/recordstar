@@ -136,6 +136,7 @@
       
       .signin-btn:hover {
         background-color: #7B3FE4;
+        color: white; 
         transform: scale(1.03);
       }
       
@@ -209,11 +210,13 @@
         <div class="col-md-6 position-relative d-flex p-5">
 
            <!-- Logo in top-left corner -->
-        <img 
-            src="{% static 'images/rs logo design.png' %}" 
-            alt="Logo" 
-            class="position-absolute top-0 start-0 m-4" 
-            style="height: 37px; z-index: 0;">
+           <a href="{% url 'account_login' %}" class="position-absolute top-0 start-0 m-4" style="z-index: 0;">
+            <img 
+              src="{% static 'images/rs logo design.png' %}" 
+              alt="Logo" 
+              style="height: 37px;">
+          </a>
+      
           
             <div class="ms-auto mt-5 form-container" style="width: 100%; max-width: 350px;">
               <!-- Header -->
@@ -222,8 +225,10 @@
             
               <!-- Google login -->
               <a href="{% provider_login_url 'google' %}?next=/dashboard/" class="google-btn w-100 mb-3">
-                <i class="bi bi-google me-2"></i> Sign in with Google
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" style="height: 20px; width: 20px; margin-right: 8px;">
+                Sign in with Google
               </a>
+              
 
             
               <!-- Divider -->
