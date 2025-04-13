@@ -60,20 +60,43 @@
     }
 
     .arrow-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: linear-gradient(to bottom right, #8f2de6, #560BAD);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      z-index: 10;
-    }
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: linear-gradient(to bottom right, #8f2de6, #560BAD);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        z-index: 10;
+      }
 
+      .arrow-btn:hover {
+        transform: translateY(-50%) scale(1.1);
+        background: linear-gradient(to bottom right, #9d5cf2, #7B3FE4);
+        box-shadow: 0 4px 12px rgba(123, 63, 228, 0.4);
+        transition: all 0.3s ease;
+      }
+      
+      .arrow-icon {
+        height: 22px;
+        filter: brightness(0) invert(1);
+        transition: filter 0.3s ease;
+      }
+      
+      
+      .arrow-icon {
+        height: 22px;
+        filter: brightness(0) invert(1); /* makes the arrow white */
+      }
+      
+      .rotate-left {
+        transform: rotate(180deg);
+      }
+            
     .arrow-btn img {
       height: 20px;
     }
@@ -92,8 +115,7 @@
       right: 30px;
       font-size: 0.9rem;
       font-weight: 600;
-      text-decoration: underline;
-      color: #666;
+      color: #7B3FE4;
     }
 
     .logo {
@@ -129,7 +151,7 @@
   <div class="wrapper">
     <div id="slider" class="slider-container">
       <div class="section">
-        <h2 style="color: #560BAD;">Welcome to RecordStar!</h2>
+        <h2 style="color: #560BAD;">Welcome {{ user.username }}!</h2>
         {% if user.profile.account_type == 'L' %}
           <p>As a <strong>Librarian</strong>, you'll manage records and collections.</p>
         {% else %}
@@ -152,6 +174,16 @@
     <div class="dot active" onclick="goToSlide(0)"></div>
     <div class="dot" onclick="goToSlide(1)"></div>
   </div>
+  <!-- Left Arrow -->
+<div class="arrow-btn arrow-left" onclick="goToSlide(0)">
+    <img src="https://cdn-icons-png.flaticon.com/512/130/130884.png" class="arrow-icon rotate-left">
+  </div>
+  
+  <!-- Right Arrow -->
+  <div class="arrow-btn arrow-right" onclick="goToSlide(1)">
+    <img src="https://cdn-icons-png.flaticon.com/512/130/130884.png" class="arrow-icon">
+  </div>
+  
 
   <script>
     let currentSlide = 0;
