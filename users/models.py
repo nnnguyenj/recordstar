@@ -47,15 +47,14 @@ class Rating(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} rated {self.record.cd.title} ({self.rating_value})"
-
+        return f"{self.user.username} rated {self.cd.title} ({self.rating_value})"
     
 class Collection(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collections")
     name = models.CharField(max_length=100)
-    is_public = models.BooleanField(default=True)  # True: public, False: private
+    is_public = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    records = models.ManyToManyField(Record, blank=True, related_name="collections")
+    cds = models.ManyToManyField(CD, blank=True, related_name="collections")
 
     def __str__(self):
         return f"{self.name} ({'Public' if self.is_public else 'Private'})"

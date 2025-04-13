@@ -34,19 +34,15 @@ def dashboard_view(request):
     return render(request, "users/dashboard.html", context)
 
 @login_required
-def playlists_view(request):
-    return render(request, "users/playlists.html")
-
-@login_required
 def recent_activity_view(request):
-    from .models import Record, FriendActivity
-    
     recent_friends = FriendActivity.objects.filter(user=request.user).order_by('-timestamp')[:5]
-    recent_records = Record.objects.filter(user=request.user).order_by('-created_at')[:5]
-    #later: recent_ratings = Rating.objects.filter(user=request.user).order_by('-timestamp')[:5]
+    recent_collections = Collection.objects.filter(owner=request.user).order_by('-created_at')[:5]
+    recent_ratings = Rating.objects.filter(user=request.user).order_by('-created_at')[:5]
+
     return render(request, "users/recent_activity.html", {
         "recent_friends": recent_friends,
-        "recent_records": recent_records,
+        "recent_collections": recent_collections,
+        "recent_ratings": recent_ratings,
     })
 
 @login_required
@@ -159,65 +155,92 @@ def friends_view(request):
     })
 
 @login_required
-def toggle_collection_privacy(request, collection_id):
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-    collection.is_public = not collection.is_public
-    collection.save()
-    return redirect("collection")
+def my_collections_view(request):
+    collections = Collection.objects.filter(owner=request.user)
+    return render(request, "users/collection.html", {"collections": collections})
 
 @login_required
 def add_collection_view(request):
     if request.method == "POST":
         name = request.POST.get("name")
         if name:
-            collection = Collection.objects.create(owner=request.user, name=name)
-            return redirect("collection_detail", collection_id=collection.id)
+            is_public = True if request.user.profile.account_type == 'P' else request.POST.get("is_public") == "on"
+            Collection.objects.create(owner=request.user, name=name, is_public=is_public)
+            return redirect("collection")
     return render(request, "users/add_collection.html")
 
 @login_required
 def collection_detail_view(request, collection_id):
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-    available_records = Record.objects.filter(user=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
+    collection = get_object_or_404(Collection, id=collection_id)
+
+    # Restrict patrons from viewing private collection contents they don’t own
+    if not collection.is_public and collection.owner != request.user:
+        if request.user.profile.account_type == 'P':
+            return render(request, "users/collection_detail_limited.html", {
+                "collection": collection
+            })
+
+    available_cds = CD.objects.filter(owner=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        artist = request.POST.get("artist")
+        genre = request.POST.get("genre")
+        release_year = request.POST.get("release_year")
+
+        if title and artist:
+            cd = CD.objects.create(
+                title=title,
+                artist=artist,
+                genre=genre,
+                release_year=release_year or None,
+                owner=request.user,
+            )
+            collection.cds.add(cd)
+            return redirect("collection_detail", collection_id=collection.id)
+
     return render(request, "users/collection_detail.html", {
         "collection": collection,
-        "available_records": available_records,
+        "available_cds": available_cds,
     })
 
 
 @login_required
-def add_record_to_collection(request, collection_id):
+def remove_cd_from_collection(request, collection_id, cd_id):
     collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-
+    cd = get_object_or_404(CD, id=cd_id, owner=request.user)
     if request.method == "POST":
-        record_id = request.POST.get("record_id")
-        if record_id:
-            record = get_object_or_404(Record, id=record_id, user=request.user)
-            collection.cds.add(record)
-            return redirect("collection_detail", collection_id=collection.id)
-
-    return redirect("collection_detail", collection_id=collection.id)
-
-@login_required
-def edit_collection_view(request, collection_id):
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        if name:
-            collection.name = name
-            collection.save()
+        collection.cds.remove(cd)
     return redirect("collection_detail", collection_id=collection.id)
 
 @login_required
 def delete_collection_view(request, collection_id):
     collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-    if request.method == 'POST':
+
+    if request.method == "POST":
         collection.delete()
-        return redirect("my_collections")
+        return redirect("collection")
+
+    return render(request, "users/confirm_delete.html", {"collection": collection})
+
+@login_required
+def toggle_collection_privacy(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+
+    if request.method == "POST":
+        collection.is_public = not collection.is_public
+        collection.save()
     return redirect("collection_detail", collection_id=collection.id)
 
 @login_required
-def remove_record_from_collection(request, collection_id, record_id):
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-    record = get_object_or_404(Record, id=record_id, user=request.user)
-    collection.cds.remove(record)
-    return redirect('collection_detail', collection_id=collection.id)
+def browse_collections(request):
+    if request.user.profile.account_type == 'P':
+        collections = Collection.objects.filter(is_public=True) | Collection.objects.filter(owner=request.user)
+    else:
+        collections = Collection.objects.all()
+
+    return render(request, "users/browse_collections.html", {
+        "collections": collections.distinct(),
+    })
+
+
