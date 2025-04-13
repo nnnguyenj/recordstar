@@ -10,6 +10,7 @@ from .models import Profile
 from .models import FriendActivity
 from .models import Rating
 from .forms import RatingForm
+from .models import Collection
 
 def index_view(request):
     return render(request, "users/dashboard.html")
@@ -151,3 +152,46 @@ def friends_view(request):
         "friends": friends,
         "all_users": all_users,
     })
+
+@login_required
+def my_collections_view(request):
+    collections = Collection.objects.filter(owner=request.user)
+    return render(request, "users/collection.html", {"collections": collections})
+
+from django.shortcuts import redirect
+
+@login_required
+@login_required
+def add_collection_view(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        if name:
+            Collection.objects.create(owner=request.user, name=name)
+            return redirect("collection")
+    return render(request, "users/add_collection.html")
+
+@login_required
+def collection_detail_view(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    available_cds = CD.objects.filter(owner=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
+    
+    if request.method == "POST":
+        cd_id = request.POST.get("cd_id")
+        if cd_id:
+            cd = get_object_or_404(CD, id=cd_id, owner=request.user)
+            collection.cds.add(cd)
+            return redirect("collection_detail", collection_id=collection.id)
+
+    return render(request, "users/collection_detail.html", {
+        "collection": collection,
+        "available_cds": available_cds,
+    })
+
+@login_required
+def remove_cd_from_collection(request, collection_id, cd_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    if request.method == "POST":
+        collection.cds.remove(cd_id)
+    return redirect("collection")
+
+

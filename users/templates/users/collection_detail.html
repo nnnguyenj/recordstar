@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}{{ collection.name }} Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ collection.name }}</h2>
+  <p><strong>Privacy:</strong> {{ collection.is_public|yesno:"Public,Private" }}</p>
+
+  <h4 class="mt-4">CDs in This Collection</h4>
+  {% if collection.cds.all %}
+    <ul class="list-group mb-4">
+      {% for cd in collection.cds.all %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ cd.title }}</strong> by {{ cd.artist }}<br>
+            <small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small>
+          </div>
+          <form method="POST" action="{% url 'remove_cd_from_collection' collection.id cd.id %}">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger">Remove</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">No CDs in this collection yet.</p>
+  {% endif %}
+
+  <hr>
+
+  <h4>Add a CD to This Collection</h4>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="cd_id" class="form-label">Select a CD:</label>
+      <select name="cd_id" id="cd_id" class="form-select" required>
+        {% for cd in available_cds %}
+          <option value="{{ cd.id }}">{{ cd.title }} by {{ cd.artist }}</option>
+        {% empty %}
+          <option disabled>No available CDs to add.</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-success">Add CD</button>
+    <a href="{% url 'collection' %}" class="btn btn-secondary ms-2">Back</a>
+  </form>
+</div>
+{% endblock %}
