@@ -1,10 +1,44 @@
 {% extends "base.html" %}
-
+{% load bootstrap5 %}
 {% block title %}Ratings{% endblock %}
-
 {% block content %}
-<div class="text-center">
+<div class="container mt-4">
   <h2>Your Ratings</h2>
-  <p>Checkout past ratings!</p>
+  <div class="row">
+    <!-- Ratings List -->
+    <div class="col-md-6">
+      {% if ratings %}
+        <ul class="list-group">
+          {% for rating in ratings %}
+            <li class="list-group-item">
+              <strong>{{ rating.cd.title }}</strong> by {{ rating.cd.artist }}<br>
+              Rating: {{ rating.rating_value }} / 10<br>
+              {% if rating.review %}
+                <em>{{ rating.review }}</em><br>
+              {% endif %}
+              <small class="text-muted">Rated on {{ rating.created_at|date:"M d, Y H:i" }}</small>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>You haven't rated any CDs yet.</p>
+      {% endif %}
+    </div>
+    <!-- Add New Rating Form -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4>Add a New Rating</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button type="submit" class="btn btn-primary">Submit Rating</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

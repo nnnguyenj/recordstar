@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}{{ collection.name }} Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ collection.name }}</h2>
+  <p><strong>Privacy:</strong> {{ collection.is_public|yesno:"Public,Private" }}</p>
+
+  <h4 class="mt-4">CDs in This Collection</h4>
+  {% if collection.cds.all %}
+    <ul class="list-group mb-4">
+      {% for cd in collection.cds.all %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ cd.title }}</strong> by {{ cd.artist }}<br>
+            <small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">No CDs in this collection yet.</p>
+  {% endif %}
+
+  <form method="POST" action="{% url 'toggle_collection_privacy' collection.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-secondary mb-3">
+      Make {{ collection.is_public|yesno:"Private,Public" }}
+    </button>
+  </form>
+  
+  <hr>
+
+  <hr>
+  <h4>Add a New CD to This Collection</h4>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label for="title" class="form-label">CD Title</label>
+        <input type="text" name="title" id="title" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <label for="artist" class="form-label">Artist</label>
+        <input type="text" name="artist" id="artist" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <label for="genre" class="form-label">Genre</label>
+        <input type="text" name="genre" id="genre" class="form-control">
+      </div>
+      <div class="col-md-6">
+        <label for="release_year" class="form-label">Release Year</label>
+        <input type="number" name="release_year" id="release_year" class="form-control">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-success mt-3">Add CD to Collection</button>
+    <a href="{% url 'collection' %}" class="btn btn-secondary mt-3 ms-2">Back</a>
+  </form>  
+
+  <hr>
+<form method="POST" action="{% url 'delete_collection' collection.id %}" onsubmit="return confirm('Are you sure you want to delete this collection?');">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Delete This Collection</button>
+</form>
+</div>
+
+
+{% endblock %}
+
