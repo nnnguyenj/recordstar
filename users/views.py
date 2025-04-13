@@ -4,12 +4,12 @@ from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
-from recordstar.models import CD
 from .models import Record
 from .models import Profile
 from .models import FriendActivity
 from .models import Rating
 from .forms import RatingForm
+from .models import Collection
 
 def index_view(request):
     return render(request, "users/dashboard.html")
@@ -51,8 +51,14 @@ def recent_activity_view(request):
 
 @login_required
 def collection_view(request):
-    cds = CD.objects.filter(owner=request.user)
-    return render(request, "users/collection.html", {"cds": cds})
+    records = Record.objects.filter(user=request.user)
+    return render(request, "users/collection.html", {"records": records})
+
+
+@login_required
+def my_collections_view(request):
+    collections = request.user.collections.all()
+    return render(request, "users/collections.html", {"collections": collections})
 
 @login_required
 def ratings_view(request):
@@ -99,35 +105,35 @@ def upgrade_user_to_librarian(request, user_id):
 
 @login_required
 def add_record(request):
+    from recordstar.models import CD
+
     if request.method == 'POST':
-        title = request.POST.get('title')
-        artist = request.POST.get('artist')
-        genre = request.POST.get('genre')
-        release_date = request.POST.get('release_date')
+        cd_id = request.POST.get('cd_id')
         rating = request.POST.get('rating')
         review = request.POST.get('review')
 
+        cd = get_object_or_404(CD, id=cd_id)
+
         Record.objects.create(
             user=request.user,
-            title=title,
-            artist=artist,
-            genre=genre,
-            release_date=release_date,
+            cd=cd,
             rating=rating,
             review=review,
         )
         return redirect('collection')
 
-    return render(request, 'users/add_record.html')
+    all_cds = CD.objects.all()
+    return render(request, 'users/add_record.html', {"all_cds": all_cds})
+
 
 @login_required
 def delete_record_view(request, record_id):
     record = get_object_or_404(Record, id=record_id, user=request.user)
     if request.method == 'POST':
         record.delete()
-        return redirect('collection')
+        return redirect("collection")
     else:
-        return redirect('collection') #Or you could render a confirmation page.
+        return redirect("collection")
     
 @login_required
 def add_friend(request, user_id):
@@ -151,3 +157,67 @@ def friends_view(request):
         "friends": friends,
         "all_users": all_users,
     })
+
+@login_required
+def toggle_collection_privacy(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    collection.is_public = not collection.is_public
+    collection.save()
+    return redirect("collection")
+
+@login_required
+def add_collection_view(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        if name:
+            collection = Collection.objects.create(owner=request.user, name=name)
+            return redirect("collection_detail", collection_id=collection.id)
+    return render(request, "users/add_collection.html")
+
+@login_required
+def collection_detail_view(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    available_records = Record.objects.filter(user=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
+    return render(request, "users/collection_detail.html", {
+        "collection": collection,
+        "available_records": available_records,
+    })
+
+
+@login_required
+def add_record_to_collection(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+
+    if request.method == "POST":
+        record_id = request.POST.get("record_id")
+        if record_id:
+            record = get_object_or_404(Record, id=record_id, user=request.user)
+            collection.cds.add(record)
+            return redirect("collection_detail", collection_id=collection.id)
+
+    return redirect("collection_detail", collection_id=collection.id)
+
+@login_required
+def edit_collection_view(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        if name:
+            collection.name = name
+            collection.save()
+    return redirect("collection_detail", collection_id=collection.id)
+
+@login_required
+def delete_collection_view(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    if request.method == 'POST':
+        collection.delete()
+        return redirect("my_collections")
+    return redirect("collection_detail", collection_id=collection.id)
+
+@login_required
+def remove_record_from_collection(request, collection_id, record_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    record = get_object_or_404(Record, id=record_id, user=request.user)
+    collection.cds.remove(record)
+    return redirect('collection_detail', collection_id=collection.id)

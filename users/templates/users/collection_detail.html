@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}{{ collection.name }} Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ collection.name }}</h2>
+  <p><strong>Privacy:</strong> {{ collection.is_public|yesno:"Public,Private" }}</p>
+
+  <a href="{% url 'toggle_collection_privacy' collection.id %}" class="btn btn-outline-secondary mb-4">
+    Make {{ collection.is_public|yesno:"Private,Public" }}
+  </a>
+
+  <h4 class="mt-4">Records in This Collection</h4>
+  {% if collection.cds.all %}
+    <div class="row">
+      {% for record in collection.cds.all %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">{{ record.cd.title }}</h5>
+              <p class="card-text">
+                {{ record.cd.artist }}<br>
+                Genre: {{ record.cd.genre }}<br>
+                Released: {{ record.cd.release_date }}
+              </p>
+              <a href="{% url 'remove_record_from_collection' collection.id record.id %}" class="btn btn-sm btn-danger">
+                Remove from Collection
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>You haven't added any records to this collection yet.</p>
+  {% endif %}
+
+  <hr>
+
+  <h4>Add a Record to This Collection</h4>
+  <form method="POST" action="{% url 'add_record_to_collection' collection.id %}">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="record_id" class="form-label">Select a record from your library:</label>
+      <select name="record_id" id="record_id" class="form-select" required>
+        {% for record in available_records %}
+          <option value="{{ record.id }}">{{ record.cd.title }} by {{ record.cd.artist }}</option>
+        {% empty %}
+          <option disabled>You have no additional records to add.</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Record</button>
+  </form>
+
+  <hr>
+
+  <h4>Edit Collection Name</h4>
+  <form method="POST" action="{% url 'edit_collection' collection.id %}">
+    {% csrf_token %}
+    <div class="mb-3">
+      <input type="text" name="name" value="{{ collection.name }}" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-warning">Update Name</button>
+  </form>
+
+  <hr>
+
+  <h4>Danger Zone</h4>
+  <form method="POST" action="{% url 'delete_collection' collection.id %}" onsubmit="return confirm('Are you sure you want to delete this collection?');">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete This Collection</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,40 +1,31 @@
 {% extends "base.html" %}
-
-{% block title %}My Collection{% endblock %}
-
+{% block title %}My Collections{% endblock %}
 {% block content %}
-<div class="text-center">
-  <h2>Your Collection</h2>
-  <p>See your personal collections and playlists!</p>
-
-  <div class="mt-5">
+<div class="container mt-4">
+  <h2>My Collections</h2>
+  <a href="{% url 'add_collection' %}" class="btn btn-primary mb-3">Create New Collection</a>
+  {% if collections %}
     <div class="row">
-      {% if cds %}
-        {% for cd in cds %}
-          <div class="col-md-4 mb-4">
-            <div class="card h-100">
-              {% if cd.cover_image %}
-                <img src="{{ cd.cover_image.url }}" class="card-img-top" alt="{{ cd.title }}">
-              {% else %}
-                <div class="card-img-top bg-light text-center py-5">No Image</div>
-              {% endif %}
-              <div class="card-body">
-                <h5 class="card-title">{{ cd.title }}</h5>
-                <p class="card-text">{{ cd.artist }}</p>
-                <p class="card-text"><small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small></p>
-              </div>
+      {% for collection in collections %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">{{ collection.name }}</h5>
+            </div>
+            <div class="card-body">
+              <p>Status: {% if collection.is_public %}Public{% else %}Private{% endif %}</p>
+              <a href="{% url 'collection_detail' collection.id %}" class="btn btn-sm btn-outline-primary mb-2">View Details</a>
+              <a href="{% url 'toggle_collection_privacy' collection.id %}" class="btn btn-sm btn-outline-secondary">
+                Make {% if collection.is_public %}Private{% else %}Public{% endif %}
+              </a>
             </div>
           </div>
-        {% endfor %}
-      {% else %}
-        <div class="col-12 text-center">
-          <p>You don't have any CDs in your collection yet. Add some to get started!</p>
         </div>
-      {% endif %}
-      <div class="mt-4">
-        <a href="{% url 'add_item' %}" class="btn btn-primary">Add New CD</a>
-      </div>    
+      {% endfor %}
     </div>
-  </div>
+  {% else %}
+    <p>You do not have any collections yet.</p>
+  {% endif %}
 </div>
 {% endblock %}
+
