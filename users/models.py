@@ -20,10 +20,6 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username} ({self.get_account_type_display()})"
     
-    def has_custom_picture(self):
-        return self.image and not self.image.name.endswith("default.jpg")
-
-    
 class FriendActivity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friend_activities")
     friend = models.ForeignKey(User, on_delete=models.CASCADE, related_name="added_by")
