@@ -184,6 +184,8 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_ADAPTER = "users.adapters.CustomAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True  # This skips the "Continue" step
 
 # AWS S3
 AWS_ACCESS_KEY_ID = os.getenv('AWS_S3_ACCESS_KEY')

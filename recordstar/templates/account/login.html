@@ -224,7 +224,7 @@
               <p class="text-muted text-center mb-4">Please enter your login details.</p>
             
               <!-- Google login -->
-              <a href="{% provider_login_url 'google' %}?next=/dashboard/" class="google-btn w-100 mb-3">
+              <a href="{% provider_login_url 'google' process='login' %}&prompt=select_account&next=/dashboard/" class="google-btn w-100 mb-3">
                 <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" style="height: 20px; width: 20px; margin-right: 8px;">
                 Sign in with Google
               </a>
