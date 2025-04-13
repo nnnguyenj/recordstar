@@ -32,7 +32,7 @@ class FriendActivity(models.Model):
 class Record(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     cd = models.ForeignKey('recordstar.CD', on_delete=models.CASCADE, related_name='user_records')  # NEW
-    rating = models.IntegerField()  # 1-10 scale
+    user_rating = models.IntegerField()  # 1-10 scale
     review = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

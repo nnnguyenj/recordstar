@@ -30,27 +30,20 @@
               {% else %}
                 <p class="text-muted">No CDs in this collection yet.</p>
               {% endif %}
-              <div class="card-body">
-                <h5 class="card-title">{{ cd.title }}</h5>
-                <p class="card-text">{{ cd.artist }}</p>
-                <p class="card-text"><small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small></p>
-                <p>Code: {{ cd.unique_code }}</p>
-
-                <a href="{% url 'edit_cd' cd.id %}" class="btn btn-warning">Edit</a>
-                <a href="{% url 'delete_cd' cd.id %}" class="btn btn-danger">Delete</a>
-              </div>
+              <a href="{% url 'collection_detail' collection.id %}" class="btn btn-outline-primary">Edit Collection</a>
+              <form action="{% url 'delete_collection' collection.id %}" method="POST" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger">Delete Collection</button>
+              </form>
             </div>
           </div>
         </div>
-      {% endif %}
-      <div class="mt-4">
-        <a href="{% url 'add_item' %}" class="btn btn-primary">Add New CD</a>
-        <a href="{% url 'search_cd' %}" class="btn btn-primary">Search CD</a>
-      </div>    
+      {% endfor %}
     </div>
   {% else %}
     <p>You have no collections yet.</p>
   {% endif %}
 </div>
 {% endblock %}
+
 

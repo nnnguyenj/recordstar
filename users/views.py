@@ -10,6 +10,8 @@ from .models import FriendActivity
 from .models import Rating
 from .forms import RatingForm
 from .models import Collection
+from recordstar.models import CD
+
 
 def index_view(request):
     return render(request, "users/dashboard.html")

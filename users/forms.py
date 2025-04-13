@@ -5,16 +5,20 @@ from .models import Rating
 class RecordForm(forms.ModelForm):
     class Meta:
         model = Record
-        fields = ['title', 'artist', 'genre', 'release_date', 'rating', 'review']
+        fields = ['cd', 'user_rating', 'review']
         widgets = {
-            'release_date': forms.DateInput(attrs={'type': 'date'}),
-            'rating': forms.NumberInput(attrs={'min': '1', 'max': '10'}),
+            'user_rating': forms.NumberInput(attrs={'min': 1, 'max': 10}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['cd'].label_from_instance = lambda obj: f"{obj.title} by {obj.artist}"
+
 
 class RatingForm(forms.ModelForm):
     class Meta:
         model = Rating
-        fields = ['cd', 'rating_value', 'review']
+        fields = ['record', 'rating_value', 'review']
         widgets = {
             'rating_value': forms.NumberInput(attrs={'min': 1, 'max': 10}),
         }
