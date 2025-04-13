@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse
 from django.views import generic
@@ -13,7 +12,7 @@ from users.models import Profile
 
 
 class IndexView(generic.TemplateView):
-    template_name = "recordstar/index.html"
+    template_name = "recordstar/upload_picture.html"
 # Create your views here.
 
 
@@ -29,7 +28,7 @@ def update_profile_picture(request):
         if user:
             login(request, user)
 
-        return redirect("/recordstar/")
+        return redirect("update_profile_picture")
 
     return render(request, "recordstar/upload_picture.html")
 

@@ -65,6 +65,7 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         "AUTH_PARAMS": {
             'access_type': 'online',
+            "prompt": "select_account",
         }
     }
 }
@@ -176,11 +177,13 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend"
 )
 
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/recordstar/'
+LOGIN_REDIRECT_URL = '/recordstar/update_picture/'
+LOGOUT_REDIRECT_URL = 'account/login.html'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_ADAPTER = "users.adapters.CustomAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "users.adapters.CustomSocialAccountAdapter"
 
 # AWS S3
 AWS_ACCESS_KEY_ID = os.getenv('AWS_S3_ACCESS_KEY')
