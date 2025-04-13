@@ -1,45 +1,49 @@
 {% extends "base.html" %}
-
-{% block title %}My Collection{% endblock %}
-
+{% block title %}My Collections{% endblock %}
 {% block content %}
-<div class="text-center">
-  <h2>Your Collection</h2>
-  <p>See your personal collections and playlists!</p>
+<div class="container mt-4">
+  <h2>My Collections</h2>
+  <a href="{% url 'add_collection' %}" class="btn btn-primary mb-3">Create New Collection</a>
 
-  <div class="mt-5">
+  {% if collections %}
     <div class="row">
-      {% if cds %}
-        {% for cd in cds %}
-          <div class="col-md-4 mb-4">
-            <div class="card h-100">
-              {% if cd.cover_image %}
-                <img src="{{ cd.cover_image.url }}" class="card-img-top" alt="{{ cd.title }}">
+      {% for collection in collections %}
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">{{ collection.name }}</h5>
+              <span class="badge bg-secondary">{{ collection.is_public|yesno:"Public,Private" }}</span>
+            </div>
+            <div class="card-body">
+              {% if collection.cds.all %}
+                <ul class="list-group mb-3">
+                  {% for cd in collection.cds.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      {{ cd.title }} by {{ cd.artist }}
+                      <form method="POST" action="{% url 'remove_cd_from_collection' collection.id cd.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger">Remove</button>
+                      </form>
+                    </li>
+                  {% endfor %}
+                </ul>
               {% else %}
-                <div class="card-img-top bg-light text-center py-5">No Image</div>
+                <p class="text-muted">No CDs in this collection yet.</p>
               {% endif %}
-              <div class="card-body">
-                <h5 class="card-title">{{ cd.title }}</h5>
-                <p class="card-text">{{ cd.artist }}</p>
-                <p class="card-text"><small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small></p>
-                <p>Code: {{ cd.unique_code }}</p>
-
-                <a href="{% url 'edit_cd' cd.id %}" class="btn btn-warning">Edit</a>
-                <a href="{% url 'delete_cd' cd.id %}" class="btn btn-danger">Delete</a>
-              </div>
+              <a href="{% url 'collection_detail' collection.id %}" class="btn btn-outline-primary">Edit Collection</a>
+              <form action="{% url 'delete_collection' collection.id %}" method="POST" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger">Delete Collection</button>
+              </form>
             </div>
           </div>
-        {% endfor %}
-      {% else %}
-        <div class="col-12 text-center">
-          <p>You don't have any CDs in your collection yet. Add some to get started!</p>
         </div>
-      {% endif %}
-      <div class="mt-4">
-        <a href="{% url 'add_item' %}" class="btn btn-primary">Add New CD</a>
-        <a href="{% url 'search_cd' %}" class="btn btn-primary">Search CD</a>
-      </div>    
+      {% endfor %}
     </div>
-  </div>
+  {% else %}
+    <p>You have no collections yet.</p>
+  {% endif %}
 </div>
 {% endblock %}
+
+
