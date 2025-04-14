@@ -3,32 +3,37 @@
 {% block title %}Ratings{% endblock %}
 {% block content %}
 <div class="container mt-4">
-  <h2>Your Ratings</h2>
-  <div class="row">
-    <!-- Ratings List -->
-    <div class="col-md-6">
-      {% if ratings %}
-        <ul class="list-group">
-          {% for rating in ratings %}
-            <li class="list-group-item">
-              <strong>{{ rating.cd.title }}</strong> by {{ rating.cd.artist }}<br>
-              Rating: {{ rating.rating_value }} / 10<br>
-              {% if rating.review %}
-                <em>{{ rating.review }}</em><br>
-              {% endif %}
-              <small class="text-muted">Rated on {{ rating.created_at|date:"M d, Y H:i" }}</small>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>You haven't rated any CDs yet.</p>
-      {% endif %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold" style="color: #560BAD;">Your Ratings</h2>
+    <a href="#ratingForm" class="btn custom-hover-button">Add a New Rating</a>
+  </div>
+
+  {% if ratings %}
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <ul class="list-group mb-5">
+        {% for rating in ratings %}
+          <li class="list-group-item">
+            <strong>{{ rating.cd.title }}</strong> by {{ rating.cd.artist }}<br>
+            Rating: {{ rating.rating_value }} / 10<br>
+            {% if rating.review %}
+              <em>{{ rating.review }}</em><br>
+            {% endif %}
+            <small class="text-muted">Rated on {{ rating.created_at|date:"M d, Y H:i" }}</small>
+          </li>
+        {% endfor %}
+      </ul>
     </div>
-    <!-- Add New Rating Form -->
+  </div>
+  {% else %}
+  <p class="text-muted ms-1" style="font-size: 0.95rem;">You haven't rated any CDs yet.</p>
+  {% endif %}
+
+  <div id="ratingForm" class="row justify-content-center">
     <div class="col-md-6">
       <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-          <h4>Add a New Rating</h4>
+          <h4 class="mb-0">Add a New Rating</h4>
         </div>
         <div class="card-body">
           <form method="POST">
@@ -41,4 +46,16 @@
     </div>
   </div>
 </div>
+
+<style>
+  .custom-hover-button {
+    border: 2px solid #7B3FE4;
+    color: #7B3FE4;
+    transition: all 0.3s ease;
+  }
+  .custom-hover-button:hover {
+    background-color: #7B3FE4;
+    color: white;
+  }
+</style>
 {% endblock %}
