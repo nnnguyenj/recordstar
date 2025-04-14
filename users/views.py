@@ -29,6 +29,12 @@ def google_login(request):
 @login_required
 def dashboard_view(request):
     context = {"user": request.user}
+    
+    # Add recent activity data
+    context["recent_friends"] = FriendActivity.objects.filter(user=request.user).order_by('-timestamp')[:5]
+    context["recent_collections"] = Collection.objects.filter(owner=request.user).order_by('-created_at')[:5]
+    context["recent_ratings"] = Rating.objects.filter(user=request.user).order_by('-created_at')[:5]
+
     # If current user is a librarian, retrieve all patron users.
     if request.user.profile.account_type == 'L':
         patrons = User.objects.filter(profile__account_type='P')

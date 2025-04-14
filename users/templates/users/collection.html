@@ -1,49 +1,124 @@
 {% extends "base.html" %}
-{% block title %}My Collections{% endblock %}
+{% load static %}
+
+{% block title %}Your Collections{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h2>My Collections</h2>
-  <a href="{% url 'add_collection' %}" class="btn btn-primary mb-3">Create New Collection</a>
+<div class="container mt-3">
+  <!-- Title and Create Button -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold" style="color: #560BAD;">Your Collections</h2>
+    <a href="{% url 'add_collection' %}" class="btn btn-outline-primary px-4 py-2 create-btn">
+      Create New Collection
+    </a>
+  </div>
 
   {% if collections %}
-    <div class="row">
-      {% for collection in collections %}
-        <div class="col-md-6 mb-4">
-          <div class="card shadow-sm">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">{{ collection.name }}</h5>
-              <span class="badge bg-secondary">{{ collection.is_public|yesno:"Public,Private" }}</span>
-            </div>
-            <div class="card-body">
-              {% if collection.cds.all %}
-                <ul class="list-group mb-3">
-                  {% for cd in collection.cds.all %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                      {{ cd.title }} by {{ cd.artist }}
-                      <form method="POST" action="{% url 'remove_cd_from_collection' collection.id cd.id %}">
-                        {% csrf_token %}
-                        <button class="btn btn-sm btn-outline-danger">Remove</button>
-                      </form>
-                    </li>
-                  {% endfor %}
-                </ul>
-              {% else %}
-                <p class="text-muted">No CDs in this collection yet.</p>
-              {% endif %}
-              <a href="{% url 'collection_detail' collection.id %}" class="btn btn-outline-primary">Edit Collection</a>
-              <form action="{% url 'delete_collection' collection.id %}" method="POST" class="d-inline">
-                {% csrf_token %}
-                <button class="btn btn-outline-danger">Delete Collection</button>
-              </form>
-            </div>
-          </div>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for collection in collections %}
+    <div class="col">
+      <div class="card collection-card h-100 position-relative">
+        <!-- Dropdown positioned absolutely, separate from main clickable body -->
+        <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
+          <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            ⋮
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
+                Make {{ collection.is_public|yesno:"Private,Public" }}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item text-danger delete-collection" href="#" data-id="{{ collection.id }}">
+                Delete
+              </a>
+            </li>
+          </ul>
         </div>
-      {% endfor %}
+    
+        <!-- Main body clickable for detail -->
+        <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
+          <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
+          <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
+        </div>
+      </div>
     </div>
+    
+    {% endfor %}
+  </div>
   {% else %}
-    <p>You have no collections yet.</p>
+    <p class="text-center text-muted">You have no collections yet.</p>
   {% endif %}
 </div>
+
+<style>
+  .collection-card {
+    background: linear-gradient(135deg, #f0f0f0, #e2e2f9);
+    border-radius: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: visible; /* Make room for dropdown */
+  }
+  
+  .collection-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #e7dbff, #c2a7ff);
+  }
+  .create-btn {
+    border-color: #560BAD;
+    color: #560BAD;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .create-btn:hover {
+    background-color: #7B3FE4;
+    color: white;
+  }
+
+  .dropdown-menu {
+    z-index: 1050; 
+  }
+  
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Toggle privacy
+    document.querySelectorAll('.toggle-privacy').forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.preventDefault();
+        const collectionId = this.dataset.id;
+
+        fetch(`/collection/${collectionId}/toggle-privacy/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+          },
+        })
+        .then(res => res.ok ? location.reload() : alert('Failed to toggle privacy'));
+      });
+    });
+
+    // Delete collection
+    document.querySelectorAll('.delete-collection').forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.preventDefault();
+        const collectionId = this.dataset.id;
+
+        if (confirm("Are you sure you want to delete this collection?")) {
+          fetch(`/collection/${collectionId}/delete/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}',
+            },
+          })
+          .then(res => res.ok ? location.reload() : alert('Failed to delete collection'));
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}
-
-
