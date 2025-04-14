@@ -14,20 +14,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 from allauth.account.views import LoginView, SignupView
 
 urlpatterns = [
-    # Standard login page:
-    path('accounts/login/', LoginView.as_view(template_name='account/login.html'), name='account_login'),
-    # Signup page:
-    path('accounts/signup/', SignupView.as_view(template_name='account/signup.html'), name='account_signup'),
-    # Custom Google login page:
-    path('google/login/', LoginView.as_view(template_name='account/google_login.html'), name='google_login'),
+    path("", lambda request: redirect("account_login"), name="home_redirect"),  # always redirect root to login
+    path("accounts/login/", LoginView.as_view(template_name="account/login.html"), name="account_login"),
+    path("accounts/signup/", SignupView.as_view(template_name="account/signup.html"), name="account_signup"),
+    path("google/login/", LoginView.as_view(template_name="account/google_login.html"), name="google_login"),
     path("admin/", admin.site.urls),
     path("recordstar/", include("recordstar.urls")),
     path("accounts/", include("allauth.urls")),
-    path("", include("users.urls")),
+    path("", include("users.urls")),  # include your user views
 ]

@@ -178,7 +178,8 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend"
 )
 
-LOGIN_REDIRECT_URL = '/recordstar/update_picture/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+ACCOUNT_SIGNUP_REDIRECT_URL = '/recordstar/update_picture/'  # Add this line
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
