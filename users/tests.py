@@ -12,7 +12,8 @@ class UserTests(TestCase):
     def setUp(self):
         site = Site.objects.create(domain='localhost', name='localhost')
         self.user = User.objects.create_user(username='testuser', password='password123')
-        self.profile = Profile.objects.create(user=self.user)
+        self.profile = self.user.profile
+        self.profile.save()
 
         social_app = SocialApp.objects.create(
             provider='google',
@@ -55,7 +56,7 @@ class UserTests(TestCase):
         self.librarian = User.objects.create_user(username='librarian', password='password123')
 
         # Create profile for librarian
-        self.librarian_profile = Profile.objects.create(user=self.librarian)
+        self.librarian_profile = self.librarian.profile
         self.librarian_profile.account_type = 'L'
         self.librarian_profile.save()
 

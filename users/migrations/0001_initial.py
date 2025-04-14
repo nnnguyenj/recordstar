@@ -11,13 +11,21 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('recordstar', '0001_initial'),
+        ('recordstar', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
             name='Record',
+            name='Record',
             fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('user_rating', models.IntegerField()),
+                ('review', models.TextField()),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('cd', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_records', to='recordstar.cd')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('user_rating', models.IntegerField()),
                 ('review', models.TextField()),
@@ -28,7 +36,14 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='Rating',
+            name='Rating',
             fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('rating_value', models.IntegerField()),
+                ('review', models.TextField(blank=True, null=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('record', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='users.record')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('rating_value', models.IntegerField()),
                 ('review', models.TextField(blank=True, null=True)),
@@ -39,7 +54,15 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='Profile',
+            name='Profile',
             fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('account_type', models.CharField(choices=[('P', 'Patron'), ('L', 'Librarian')], default='P', max_length=1)),
+                ('image', models.ImageField(default='profile_pics/default.jpg', upload_to='profile_pics/')),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('is_collection_public', models.BooleanField(default=True)),
+                ('friends', models.ManyToManyField(blank=True, to='users.profile')),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('account_type', models.CharField(choices=[('P', 'Patron'), ('L', 'Librarian')], default='P', max_length=1)),
                 ('image', models.ImageField(default='profile_pics/default.jpg', upload_to='profile_pics/')),
@@ -51,7 +74,12 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='FriendActivity',
+            name='FriendActivity',
             fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('timestamp', models.DateTimeField(auto_now_add=True)),
+                ('friend', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='added_by', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='friend_activities', to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
                 ('friend', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='added_by', to=settings.AUTH_USER_MODEL)),
@@ -60,7 +88,14 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='Collection',
+            name='Collection',
             fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=100)),
+                ('is_public', models.BooleanField(default=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('cds', models.ManyToManyField(blank=True, related_name='collections', to='recordstar.cd')),
+                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='collections', to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
                 ('is_public', models.BooleanField(default=True)),
