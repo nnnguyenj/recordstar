@@ -16,6 +16,11 @@ class RecordForm(forms.ModelForm):
 
 
 class RatingForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+        self.fields['record'].queryset = Record.objects.filter(user=user)
+
     class Meta:
         model = Rating
         fields = ['record', 'rating_value', 'review']

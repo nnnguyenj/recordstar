@@ -67,20 +67,23 @@ def my_collections_view(request):
 @login_required
 def ratings_view(request):
     ratings = Rating.objects.filter(user=request.user).order_by('-created_at')
+    
     if request.method == 'POST':
-        form = RatingForm(request.POST)
+        form = RatingForm(request.POST, user=request.user)
         if form.is_valid():
             rating = form.save(commit=False)
             rating.user = request.user
             rating.save()
             return redirect('ratings')
     else:
-        form = RatingForm()
+        form = RatingForm(user=request.user)
+
     context = {
         'ratings': ratings,
         'form': form,
     }
     return render(request, 'users/ratings.html', context)
+
 
 @login_required
 def profile_view(request):
@@ -181,7 +184,6 @@ def add_collection_view(request):
 def collection_detail_view(request, collection_id):
     collection = get_object_or_404(Collection, id=collection_id)
 
-    # Restrict patrons from viewing private collection contents they don’t own
     if not collection.is_public and collection.owner != request.user:
         if request.user.profile.account_type == 'P':
             return render(request, "users/collection_detail_limited.html", {
@@ -205,12 +207,21 @@ def collection_detail_view(request, collection_id):
                 owner=request.user,
             )
             collection.cds.add(cd)
+
+            Record.objects.create(
+                user=request.user,
+                cd=cd,
+                user_rating=0,
+                review=""
+            )
+
             return redirect("collection_detail", collection_id=collection.id)
 
     return render(request, "users/collection_detail.html", {
         "collection": collection,
         "available_cds": available_cds,
     })
+
 
 
 @login_required

@@ -47,7 +47,8 @@ class Rating(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} rated {self.cd.title} ({self.rating_value})"
+        return f"{self.user.username} rated {self.record.cd.title} ({self.rating_value})"
+
     
 class Collection(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collections")
