@@ -110,13 +110,16 @@
     }
 
     .skip-button {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #7B3FE4;
-    }
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #7B3FE4;
+        background: none;
+        border: none;
+        cursor: pointer;
+      }      
 
     .logo {
       position: absolute;
@@ -134,12 +137,27 @@
       }
     });
   </script>
+  <script>
+    function previewProfilePicture(event) {
+      const reader = new FileReader();
+      const image = document.getElementById('profile-preview');
+  
+      reader.onload = function () {
+        image.src = reader.result;
+      }
+  
+      if (event.target.files.length > 0) {
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    }
+  </script>
+  
   
 <body>
   <div class="logo">
     <img src="{% static 'images/rs logo design.png' %}" alt="RecordStar Logo" style="height: 38px;">
   </div>
-  <a href="{% url 'dashboard' %}" class="skip-button">Skip Account Setup</a>
+  <button class="skip-button" onclick="window.location.href='{% url 'dashboard' %}'">Skip Account Setup</button>
 
   <div class="arrow-btn arrow-left" onclick="goToSlide(0)">
     <img src="https://cdn-icons-png.flaticon.com/512/130/130884.png" style="transform: rotate(180deg);">
@@ -159,14 +177,36 @@
         {% endif %}
       </div>
       <div class="section">
-        <h2 style="color: #560BAD;">Upload Profile Picture</h2>
+        <h2 style="color: #560BAD;">Upload a Profile Picture</h2>
         <p>Upload your own profile picture or keep the default photo. You can always update your profile in settings!</p>
-        <form method="post" enctype="multipart/form-data" action="{% url 'update_profile_picture' %}">
-          {% csrf_token %}
-          <input type="file" name="profile_picture" accept="image/*" class="form-control w-50 mx-auto">
-          <button type="submit" class="btn mt-3" style="background-color: #560BAD; color: white;">Upload</button>
-        </form>
+      
+        {% if user.profile.image %}
+          <div class="mb-3 text-center">
+            <img id="profile-preview" src="{{ user.profile.image.url }}" alt="Current Profile Picture"
+                style="height: 200px; width: 200px; object-fit: cover; border-radius: 50%; border: 2px solid #AC46A1;" />
+
+          </div>
+        {% endif %}
+      
+        <form method="post" enctype="multipart/form-data" action="{% url 'update_profile_picture' %}" class="d-flex justify-content-center align-items-center gap-3 mt-4 flex-wrap">
+            {% csrf_token %}
+            
+            <!-- Hidden file input -->
+            <input type="file" name="profile_picture" id="file-upload" accept="image/*" style="display: none;" onchange="previewProfilePicture(event)">
+          
+            <!-- Custom Choose File button -->
+            <label for="file-upload" class="btn" style="background-color: #fff; border: 1px solid #ccc; font-weight: 600; padding: 0.6rem 1rem; color: #000; border-radius: 6px; cursor: pointer;">
+              Choose File
+            </label>
+          
+            <!-- Submit button -->
+            <button type="submit" class="btn" style="background-color: #560BAD; color: white; padding: 0.6rem 1.5rem; font-weight: 600; border-radius: 6px;">
+              Upload
+            </button>
+          </form>
+          
       </div>
+      
     </div>
   </div>
 
