@@ -179,7 +179,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 LOGIN_REDIRECT_URL = '/recordstar/update_picture/'
-LOGOUT_REDIRECT_URL = 'account/login.html'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_SESSION_REMEMBER = True

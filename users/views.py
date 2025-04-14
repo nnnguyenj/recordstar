@@ -18,7 +18,7 @@ def index_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("recordstar/")
+    return redirect("account_login")
 
 def google_login(request):
     if request.method == 'POST':
