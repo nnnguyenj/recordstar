@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ocydeh5ofpnwv4de&+1&3(d#&!8f6kz8(fdf&zjzbt^ditd=&7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 # SHERRIFF: Added both the local host and herokuapp.com here to handled the DisallowedHost error.
 ALLOWED_HOSTS = ['localhost','127.0.0.1','recordstar-a8de1855c54a.herokuapp.com']
@@ -37,7 +37,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1','recordstar-a8de1855c54a.herokuapp.com'
 
 # Application definition
 
-SITE_ID=2
+SITE_ID = int(os.getenv('DJANGO_SITE_ID', 2))
 
 INSTALLED_APPS = [
     'recordstar.apps.RecordstarConfig',
@@ -115,7 +115,7 @@ if 'test' in sys.argv:
 else:
     DATABASES = {
         'default': dj_database_url.config(
-            default=f"sqlite:///{BASE_DIR}/db.sqlite3"
+            default=os.getenv('DATABASE_URL')
         )
     }
 

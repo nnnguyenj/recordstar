@@ -12,7 +12,14 @@ def create_profile(sender, request, user, **kwargs):
         return
     # create Profile for each new user, default is patron
     account_type = request.session.pop("account_type", "P")
-    Profile.objects.create(user=user, account_type=account_type) #fetches account_type from session, defaults to P if no type provided
+    
+    # get_or_create returns a tuple: (object, created)
+    profile, created = Profile.objects.get_or_create(user=user, defaults={'account_type': account_type})
+    
+    if not created:
+        # Optionally update fields if needed
+        profile.account_type = account_type
+        profile.save()
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
