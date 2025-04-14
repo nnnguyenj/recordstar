@@ -5,104 +5,111 @@
 {% block content %}
 <div class="d-flex justify-content-center p-3">
   <div style="max-width: 1000px; width: 100%;">
-    <!-- Centered Welcome Section -->
+    <!-- Welcome Section -->
     <div class="text-center mb-4">
       <h1>Welcome, {{ user.username }}!</h1>
       <p>This is your dashboard where you can see your content.</p>
     </div>
 
     <!-- Recent Activity -->
-    <div class="mb-5">
-      <h3 class="fw-bold mb-3" style="color: #560BAD;">Recent Activity</h3>
-      {% if recent_friends or recent_collections or recent_ratings %}
-      <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-4">
+    <h3 class="fw-bold mb-3" style="color: #560BAD;">Recent Activity</h3>
+    {% if recent_friends or recent_collections or recent_ratings %}
+    <div class="scroll-container mb-5">
+      <div class="scroll-content">
         {% for activity in recent_friends %}
-        <div class="col">
-          <div class="card h-100 text-center border-0 shadow-sm activity-tile">
-            <div class="card-body d-flex flex-column justify-content-center">
-              <p class="fw-bold mb-1 text-purple">Added a Friend</p>
-              <p class="mb-1">@{{ activity.friend.username }}</p>
-              <small class="text-muted">{{ activity.timestamp|date:"M d, Y H:i" }}</small>
-            </div>
-          </div>
+        <div class="square-card">
+          <p class="fw-bold">New Friend</p>
+          <p class="mb-1">You added <strong>{{ activity.friend.username }}</strong></p>
+          <small class="text-muted">{{ activity.timestamp|date:"M d, Y H:i" }}</small>
         </div>
         {% endfor %}
-
         {% for collection in recent_collections %}
-        <div class="col">
-          <div class="card h-100 text-center border-0 shadow-sm activity-tile">
-            <div class="card-body d-flex flex-column justify-content-center">
-              <p class="fw-bold mb-1 text-purple">New Collection</p>
-              <p class="mb-1">"{{ collection.name }}"</p>
-              <small class="text-muted">{{ collection.created_at|date:"M d, Y H:i" }}</small>
-            </div>
-          </div>
+        <div class="square-card">
+          <p class="fw-bold">New Collection</p>
+          <p class="mb-1">"{{ collection.name }}" ({{ collection.is_public|yesno:"Public,Private" }})</p>
+          <small class="text-muted">{{ collection.created_at|date:"M d, Y H:i" }}</small>
         </div>
         {% endfor %}
-
         {% for rating in recent_ratings %}
-        <div class="col">
-          <div class="card h-100 text-center border-0 shadow-sm activity-tile">
-            <div class="card-body d-flex flex-column justify-content-center">
-              <p class="fw-bold mb-1 text-purple">Rated a CD</p>
-              <p class="mb-1">{{ rating.cd.title }}<br><small>{{ rating.rating_value }}/10</small></p>
-              <small class="text-muted">{{ rating.created_at|date:"M d, Y H:i" }}</small>
-            </div>
-          </div>
+        <div class="square-card">
+          <p class="fw-bold">New Rating</p>
+          <p class="mb-1">Rated <strong>{{ rating.cd.title }}</strong> by {{ rating.cd.artist }} ({{ rating.rating_value }}/10)</p>
+          <small class="text-muted">{{ rating.created_at|date:"M d, Y H:i" }}</small>
         </div>
         {% endfor %}
       </div>
-      {% else %}
-      <div class="card mb-3 text-start">
-        <div class="card-body">
-          <h3 class="card-title">Recent Activity</h3>
-          <p class="card-text">No recent activity yet.</p>
-        </div>
-      </div>
-      {% endif %}
     </div>
+    {% else %}
+    <div class="card mb-3 text-start">
+      <div class="card-body">
+        <h3 class="card-title">Recent Activity</h3>
+        <p class="card-text">No recent activity yet.</p>
+      </div>
+    </div>
+    {% endif %}
 
-    <!-- Placeholder for Playlists -->
+    <!-- Playlists -->
+    <h3 class="fw-bold mb-3" style="color: #560BAD;">Your Playlists</h3>
+    {% if recent_collections %}
+    <div class="scroll-container mb-5">
+      <div class="scroll-content">
+        {% for collection in recent_collections %}
+        <div class="square-card">
+          <p class="fw-bold">{{ collection.name }}</p>
+          <p class="text-muted small">{{ collection.is_public|yesno:"Public,Private" }}</p>
+          <a href="{% url 'collection_detail' collection.id %}" class="stretched-link"></a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
     <div class="card mb-3 text-start">
       <div class="card-body">
         <h3 class="card-title">Your Playlists</h3>
         <p class="card-text">No playlists available.</p>
       </div>
     </div>
+    {% endif %}
 
-    <!-- Librarian Only Section -->
     {% if user.profile.account_type == "L" %}
-      <h2>Upgrade Patron Accounts</h2>
-      {% if patrons %}
-        <ul>
-          {% for patron in patrons %}
-            <li>
-              {{ patron.username }}
-              <a href="{% url 'upgrade_user' patron.id %}">Upgrade to Librarian</a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No patron users available for upgrade.</p>
-      {% endif %}
+    <h2>Upgrade Patron Accounts</h2>
+    {% if patrons %}
+    <ul>
+      {% for patron in patrons %}
+      <li>{{ patron.username }} <a href="{% url 'upgrade_user' patron.id %}">Upgrade to Librarian</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No patron users available for upgrade.</p>
+    {% endif %}
     {% endif %}
   </div>
 </div>
 
 <style>
-  .activity-tile {
-    aspect-ratio: 1 / 1;
+  .scroll-container {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .scroll-content {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 1rem;
+  }
+  .square-card {
+    flex: 0 0 180px;
+    height: 180px;
+    background: linear-gradient(135deg, #f7f0ff, #eee6fc);
     border-radius: 1rem;
-    background: linear-gradient(135deg, #f0f0ff, #e6d4ff);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: relative;
   }
-  .activity-tile:hover {
+  .square-card:hover {
+    background: linear-gradient(135deg, #faf8ff, #f1e8fd);
     transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  }
-  .text-purple {
-    color: #560BAD;
   }
 </style>
-
 {% endblock %}
