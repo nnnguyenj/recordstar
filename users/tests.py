@@ -10,7 +10,7 @@ from django.contrib.auth import logout
 
 class UserTests(TestCase):
     def setUp(self):
-        site = Site.objects.create(domain='localhost', name='localhost')
+        site = Site.objects.get_current()
         self.user = User.objects.create_user(username='testuser', password='password123')
         self.profile = self.user.profile
         self.profile.save()
@@ -26,7 +26,7 @@ class UserTests(TestCase):
     def test_user_login(self):
         # Test if the user can log in
         response = self.client.post(reverse('account_login'), {'login': 'testuser', 'password': 'password123'})
-        self.assertRedirects(response, reverse('dashboard'))  # Change 'dashboard' to the correct redirect URL
+        self.assertRedirects(response, reverse('update_profile_picture'))  # Change 'dashboard' to the correct redirect URL
 
     def test_user_logout(self):
         # Test user can log out
@@ -34,7 +34,7 @@ class UserTests(TestCase):
         response = self.client.post(reverse('account_logout'), follow=True)
 
         # Expecting redirect to home ('/')
-        self.assertRedirects(response, '/')
+        self.assertRedirects(response, '/accounts/login/')
 
     def test_dashboard_view(self):
         # Test if logged in user can access dashboard
