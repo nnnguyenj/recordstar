@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ocydeh5ofpnwv4de&+1&3(d#&!8f6kz8(fdf&zjzbt^ditd=&7'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
@@ -34,10 +34,38 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 # SHERRIFF: Added both the local host and herokuapp.com here to handled the DisallowedHost error.
 ALLOWED_HOSTS = ['localhost','127.0.0.1','recordstar-a8de1855c54a.herokuapp.com']
 
+IS_DEVELOPMENT = os.getenv('DEVELOPMENT', 'False') == 'True'
+
+# CSP settings
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'",)
+CSP_IMG_SRC = ("'self'", "recordstar-media.s3.amazonaws.com")  # Add your S3 bucket domain
+CSP_FONT_SRC = ("'self'",)
+
+# Production-only security settings
+if not IS_DEVELOPMENT:
+    # HTTPS settings
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # HSTS settings
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Cookie settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    # Development settings - allow HTTP
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    # No HSTS in development
 
 # Application definition
-
-SITE_ID = int(os.getenv('DJANGO_SITE_ID', 2))
+SITE_ID = 2
 
 INSTALLED_APPS = [
     'recordstar.apps.RecordstarConfig',
@@ -71,6 +99,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 MIDDLEWARE = [
+    'csp.middleware.CSPMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -207,8 +236,6 @@ STORAGES = {
     },
 }
 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = False
 # SHERRIFF
 # Activate Django-Heroku.
 # Use this code to avoid the psycopg2 / django-heroku error!  
