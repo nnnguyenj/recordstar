@@ -64,7 +64,7 @@
           {% for rating in recent_ratings %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
               <span>
-                You rated <strong>{{ rating.cd.title }}</strong> by {{ rating.cd.artist }}
+                You rated <strong>{{ rating.record.cd.title }}</strong> by {{ rating.record.cd.artist }}
                 <small class="text-muted ms-2">({{ rating.rating_value }}/10)</small>
               </span>
               <span class="text-muted small">{{ rating.created_at|date:"M d, Y H:i" }}</span>

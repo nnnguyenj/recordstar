@@ -33,7 +33,7 @@
         {% for rating in recent_ratings %}
         <div class="square-card">
           <p class="fw-bold">New Rating</p>
-          <p class="mb-1">Rated <strong>{{ rating.cd.title }}</strong> by {{ rating.cd.artist }} ({{ rating.rating_value }}/10)</p>
+          <p class="mb-1">Rated <strong>{{ rating.record.cd.title }}</strong> by {{ rating.record.cd.artist }} ({{ rating.rating_value }}/10)</p>
           <small class="text-muted">{{ rating.created_at|date:"M d, Y H:i" }}</small>
         </div>
         {% endfor %}
