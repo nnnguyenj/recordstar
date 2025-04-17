@@ -325,7 +325,6 @@ def library_view(request):
             })
         
         if title and artist:
-            # Create the CD with the current user as owner
             cd = CD.objects.create(
                 title=title,
                 artist=artist,
@@ -401,12 +400,103 @@ def edit_cd(request, cd_id):
         cd.release_year = release_year or None
         cd.description = description
         
-        # Handle cover image upload
         if 'cover_image' in request.FILES:
             cd.cover_image = request.FILES['cover_image']
-        
         cd.save()
         return redirect("library")
     
-    # Display edit form
     return render(request, "users/edit_cd.html", {"cd": cd})
+
+@login_required
+def public_item_view(request, cd_id):
+    cd = get_object_or_404(CD, id=cd_id)
+    user_rating = None
+
+    # calc average rating
+    ratings = cd.ratings.all()
+    avg_rating = 0
+    if ratings.exists():
+        total = sum(r.rating_value for r in ratings)
+        avg_rating = round(total / ratings.count(), 1)
+
+    if request.user.is_authenticated:
+        try:
+            user_rating = Rating.objects.get(user=request.user, cd=cd)
+        except Rating.DoesNotExist:
+            pass
+    
+    user_collections = Collection.objects.filter(owner=request.user)
+    
+    is_owner = (cd.owner == request.user)
+    is_librarian = (request.user.profile.account_type == 'L')
+    can_add_to_collection = is_librarian or is_owner
+    
+    return render(request, "users/public_item.html", {
+        "cd": cd,
+        "user_rating": user_rating,
+        "user_collections": user_collections,
+        "is_owner": is_owner,
+        "is_librarian": is_librarian,
+        "can_add_to_collection": can_add_to_collection,
+        "avg_rating": avg_rating,
+    })
+
+@login_required
+def add_to_collection(request, collection_id, cd_id):
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    cd = get_object_or_404(CD, id=cd_id)
+    
+    if request.user.profile.account_type != 'L' and cd.owner != request.user:
+        messages.error(request, "As a patron, you can only add your own CDs to collections.")
+        return redirect('public_item', cd_id=cd_id)
+    
+    if request.method == "POST":
+        collection.cds.add(cd)
+        messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
+    
+    return redirect('public_item', cd_id=cd_id)
+
+@login_required
+def rate_cd_public(request, cd_id):
+    cd = get_object_or_404(CD, id=cd_id)
+    
+    if request.method == 'POST':
+        form_data = {
+            'rating_value': request.POST.get('rating_value'),
+            'review': request.POST.get('review')
+        }
+        
+        # check for existing rating by this user
+        try:
+            rating = Rating.objects.get(user=request.user, cd=cd)
+            rating.rating_value = form_data['rating_value']
+            rating.review = form_data['review']
+            rating.save()
+            messages.success(request, 'Your rating has been updated.')
+        except Rating.DoesNotExist:
+            Rating.objects.create(
+                user=request.user,
+                cd=cd,
+                rating_value=form_data['rating_value'],
+                review=form_data['review']
+            )
+            messages.success(request, 'Your rating has been submitted.')
+        
+    return redirect('public_item', cd_id=cd.id)
+
+@login_required
+def delete_rating(request, rating_id):
+    rating = get_object_or_404(Rating, id=rating_id, user=request.user)
+    
+    if request.method == 'POST' or request.method == 'GET':
+        cd_id = rating.cd.id
+        rating.delete()
+        
+        next_url = request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+            
+        messages.success(request, 'Rating deleted successfully.')
+        return redirect('ratings')
+        
+    return redirect('ratings')

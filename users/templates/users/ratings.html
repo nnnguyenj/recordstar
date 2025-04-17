@@ -3,43 +3,97 @@
 {% block title %}Ratings{% endblock %}
 {% block content %}
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold" style="color: #560BAD;">Your Ratings</h2>
-    <a href="#ratingForm" class="btn custom-hover-button">Add a New Rating</a>
+    <a href="#ratingForm" class="btn create-btn">Add a New Rating</a>
   </div>
 
   {% if ratings %}
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <ul class="list-group mb-5">
-        {% for rating in ratings %}
-          <li class="list-group-item">
-            <strong>{{ rating.cd.title }}</strong> by {{ rating.cd.artist }}<br>
-            Rating: {{ rating.rating_value }} / 10<br>
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for rating in ratings %}
+      <div class="col">
+        <div class="card h-100 rating-card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <h5 class="card-title fw-bold mb-0">{{ rating.cd.title }}</h5>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  ⋮
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <button class="dropdown-item text-danger delete-rating" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deleteRatingModal" 
+                            data-id="{{ rating.id }}" 
+                            data-title="{{ rating.cd.title }}">
+                      Delete Rating
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <h6 class="card-subtitle mb-2 text-muted">by {{ rating.cd.artist }}</h6>
+            
+            <div class="rating-badge mb-3">
+              <span class="rating-value">{{ rating.rating_value }}</span><span class="rating-max">/10</span>
+            </div>
+            
             {% if rating.review %}
-              <em>{{ rating.review }}</em><br>
+              <p class="card-text rating-review">{{ rating.review }}</p>
             {% endif %}
-            <small class="text-muted">Rated on {{ rating.created_at|date:"M d, Y H:i" }}</small>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
+            
+            <p class="text-muted small mt-3 mb-0">Rated on {{ rating.created_at|date:"M d, Y" }}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
   </div>
   {% else %}
-  <p class="text-muted ms-1" style="font-size: 0.95rem;">You haven't rated any CDs yet.</p>
+  <div class="alert alert-light text-center py-4">
+    <i class="bi bi-star" style="font-size: 2rem; color: #ccc;"></i>
+    <p class="mt-3 mb-0">You haven't rated any CDs yet.</p>
+  </div>
   {% endif %}
 
-  <div id="ratingForm" class="row justify-content-center">
-    <div class="col-md-6">
+  <div id="ratingForm" class="row justify-content-center mt-5">
+    <div class="col-md-8">
       <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header" style="background: linear-gradient(135deg, #7B3FE4, #560BAD); color: white;">
           <h4 class="mb-0">Add a New Rating</h4>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
           <form method="POST">
             {% csrf_token %}
-            {% bootstrap_form form %}
-            <button type="submit" class="btn btn-primary">Submit Rating</button>
+            
+            <div class="mb-3">
+              <label for="{{ form.cd.id_for_label }}" class="form-label">CD</label>
+              {% bootstrap_field form.cd show_label=False %}
+            </div>
+            
+            <div class="mb-3">
+              <label for="{{ form.rating_value.id_for_label }}" class="form-label">Rating (1-10)</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="{{ form.rating_value.id_for_label }}" 
+                name="{{ form.rating_value.html_name }}" 
+                min="1" 
+                max="10" 
+                value="{% if form.rating_value.value %}{{ form.rating_value.value }}{% else %}8{% endif %}"
+                required
+              >
+              <div class="form-text">Please enter a number between 1 and 10</div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="{{ form.review.id_for_label }}" class="form-label">Review (Optional)</label>
+              {% bootstrap_field form.review show_label=False %}
+            </div>
+            
+            <div class="text-end">
+              <button type="submit" class="btn create-btn px-4">Submit Rating</button>
+            </div>
           </form>
         </div>
       </div>
@@ -47,15 +101,115 @@
   </div>
 </div>
 
+<!-- Delete Rating Modal -->
+<div class="modal fade" id="deleteRatingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 1rem; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #e7dbff, #c2a7ff); border: none; padding: 1.5rem;">
+        <h5 class="modal-title fw-bold" style="color: #560BAD;">Delete Rating</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="mb-0">Are you sure you want to delete your rating for <strong id="ratingTitle"></strong>?</p>
+        <p class="text-muted small mt-2">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer" style="border-top: none; padding: 1rem 1.5rem 1.5rem;">
+        <button type="button" class="btn px-4" data-bs-dismiss="modal" style="background-color: #f0f0f0; color: #555; font-weight: 500; border-radius: 8px;">
+          Cancel
+        </button>
+        <form id="deleteRatingForm" method="POST" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn px-4" style="background-color: #e74c3c; color: white; font-weight: 500; border-radius: 8px;">
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <style>
-  .custom-hover-button {
-    border: 2px solid #7B3FE4;
-    color: #7B3FE4;
+  .rating-card {
+    border-radius: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #f0f0f0, #e2e2f9);
+    overflow: visible;
+  }
+  
+  .rating-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .rating-badge {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    background: linear-gradient(135deg, #7B3FE4, #560BAD);
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 600;
+  }
+  
+  .rating-value {
+    font-size: 1.1rem;
+  }
+  
+  .rating-max {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  
+  .rating-review {
+    font-style: italic;
+    color: #555;
+    border-left: 3px solid #7B3FE4;
+    padding-left: 0.8rem;
+    margin-top: 0.8rem;
+  }
+  
+  .create-btn {
+    background-color: #560BAD;
+    color: white;
+    font-weight: 500;
+    border-radius: 8px;
     transition: all 0.3s ease;
   }
-  .custom-hover-button:hover {
+
+  .create-btn:hover {
     background-color: #7B3FE4;
-    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(123, 63, 228, 0.3);
+  }
+  
+  /* Modal button animations */
+  #deleteRatingForm button {
+    transition: all 0.3s ease;
+  }
+  
+  #deleteRatingForm button:hover {
+    background-color: #c0392b;
+    transform: scale(1.05);
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle rating deletion
+    const deleteButtons = document.querySelectorAll('.delete-rating');
+    const deleteForm = document.getElementById('deleteRatingForm');
+    const ratingTitle = document.getElementById('ratingTitle');
+    
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const ratingId = this.getAttribute('data-id');
+        const cdTitle = this.getAttribute('data-title');
+        
+        ratingTitle.textContent = cdTitle;
+        deleteForm.action = `/ratings/delete/${ratingId}/`;
+      });
+    });
+  });
+</script>
 {% endblock %}

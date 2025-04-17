@@ -15,7 +15,7 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
       {% for cd in public_cds %}
       <div class="col">
-        <div class="card h-100">
+        <div class="card h-100" style="cursor: pointer;" onclick="window.location.href='{% url 'public_item' cd.id %}'">
           {% if cd.cover_image %}
             <img src="{{ cd.cover_image.url }}" class="card-img-top" alt="Cover image" style="height: 200px; object-fit: cover;">
           {% else %}
