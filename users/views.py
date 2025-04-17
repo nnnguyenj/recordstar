@@ -12,6 +12,7 @@ from .forms import RatingForm
 from .models import Collection, Library
 from recordstar.models import CD
 from django.contrib import messages
+from django.db.models import Q
 
 
 def index_view(request):
@@ -31,21 +32,15 @@ def google_login(request):
 def dashboard_view(request):
     context = {"user": request.user}
     
-    # get CDs not in any collection
-    cds_not_in_collections = CD.objects.filter(collections__isnull=True)
-    
-    # get CDs in public collections
-    cds_in_public_collections = CD.objects.filter(collections__is_public=True)
-    
-    # combine the querysets
-    public_cds = list(cds_not_in_collections) + list(cds_in_public_collections)
-    
+    # get CDs not in any collection or in public collections
+    # distinct() removes duplicates
+    public_cds = CD.objects.filter(
+        Q(collections__isnull=True) | 
+        Q(collections__is_public=True)
+    ).distinct()
+
     context["public_cds"] = public_cds
 
-    # If current user is a librarian, retrieve all patron users.
-    if request.user.profile.account_type == 'L':
-        patrons = User.objects.filter(profile__account_type='P')
-        context["patrons"] = patrons
     return render(request, "users/dashboard.html", context)
 
 @login_required
