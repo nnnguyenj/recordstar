@@ -157,7 +157,6 @@
   <div class="logo">
     <img src="{% static 'images/rs logo design.png' %}" alt="RecordStar Logo" style="height: 38px;">
   </div>
-  <button class="skip-button" onclick="window.location.href='{% url 'dashboard' %}'">Skip Account Setup</button>
 
   <div class="arrow-btn arrow-left" onclick="goToSlide(0)">
     <img src="https://cdn-icons-png.flaticon.com/512/130/130884.png" style="transform: rotate(180deg);">
@@ -187,8 +186,8 @@
 
           </div>
         {% endif %}
-      
-        <form method="post" enctype="multipart/form-data" action="{% url 'update_profile_picture' %}" class="d-flex justify-content-center align-items-center gap-3 mt-4 flex-wrap">
+        <button class="skip-button" onclick="window.location.href='{% url 'dashboard' %}'">Skip Account Setup</button>
+        <form method="post" enctype="multipart/form-data" action="{% url 'first_time_setup' %}" class="d-flex justify-content-center align-items-center gap-3 mt-4 flex-wrap">
             {% csrf_token %}
             
             <!-- Hidden file input -->

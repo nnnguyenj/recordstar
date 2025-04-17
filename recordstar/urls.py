@@ -10,6 +10,6 @@ urlpatterns = [
     # path('example/', views.example_view, name='example'),
     path("", views.IndexView.as_view(), name="index"),
     path('dashboard/', dashboard_view, name='dashboard'),
-    path("update_picture/", views.update_profile_picture, name='update_profile_picture'),
+    path("first_time_setup/", views.first_time_setup, name='first_time_setup'),
     path("search_cd/", views.search_cd_by_code, name="search_cd"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -206,7 +206,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 LOGIN_REDIRECT_URL = '/dashboard/'
-ACCOUNT_SIGNUP_REDIRECT_URL = '/recordstar/update_picture/'  # Add this line
+ACCOUNT_SIGNUP_REDIRECT_URL = '/recordstar/first_time_setup/'  # Add this line
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = "/accounts/login/"

@@ -16,7 +16,7 @@ class IndexView(generic.TemplateView):
 # Create your views here.
 
 @login_required
-def update_profile_picture(request):
+def first_time_setup(request):
     if request.method == 'POST' and 'profile_picture' in request.FILES:
         profile = Profile.objects.get(user=request.user)
         profile.image = request.FILES['profile_picture']
@@ -27,9 +27,9 @@ def update_profile_picture(request):
         if user:
             login(request, user)
 
-        return redirect("update_profile_picture")
+        return redirect("dashboard_view")
 
-    return render(request, "recordstar/upload_picture.html")
+    return render(request, "recordstar/first_time_setup.html")
 
 
 @login_required
