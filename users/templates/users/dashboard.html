@@ -3,113 +3,73 @@
 
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-center p-3">
-  <div style="max-width: 1000px; width: 100%;">
-    <!-- Welcome Section -->
-    <div class="text-center mb-4">
-      <h1>Welcome, {{ user.username }}!</h1>
-      <p>This is your dashboard where you can see your content.</p>
-    </div>
-
-    <!-- Recent Activity -->
-    <h3 class="fw-bold mb-3" style="color: #560BAD;">Recent Activity</h3>
-    {% if recent_friends or recent_collections or recent_ratings %}
-    <div class="scroll-container mb-5">
-      <div class="scroll-content">
-        {% for activity in recent_friends %}
-        <div class="square-card">
-          <p class="fw-bold">New Friend</p>
-          <p class="mb-1">You added <strong>{{ activity.friend.username }}</strong></p>
-          <small class="text-muted">{{ activity.timestamp|date:"M d, Y H:i" }}</small>
-        </div>
-        {% endfor %}
-        {% for collection in recent_collections %}
-        <div class="square-card">
-          <p class="fw-bold">New Collection</p>
-          <p class="mb-1">"{{ collection.name }}" ({{ collection.is_public|yesno:"Public,Private" }})</p>
-          <small class="text-muted">{{ collection.created_at|date:"M d, Y H:i" }}</small>
-        </div>
-        {% endfor %}
-        {% for rating in recent_ratings %}
-        <div class="square-card">
-          <p class="fw-bold">New Rating</p>
-          <p class="mb-1">Rated <strong>{{ rating.record.cd.title }}</strong> by {{ rating.record.cd.artist }} ({{ rating.rating_value }}/10)</p>
-          <small class="text-muted">{{ rating.created_at|date:"M d, Y H:i" }}</small>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% else %}
-    <div class="card mb-3 text-start">
-      <div class="card-body">
-        <h3 class="card-title">Recent Activity</h3>
-        <p class="card-text">No recent activity yet.</p>
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- Playlists -->
-    <h3 class="fw-bold mb-3" style="color: #560BAD;">Your Collections</h3>
-    {% if recent_collections %}
-    <div class="scroll-container mb-5">
-      <div class="scroll-content">
-        {% for collection in recent_collections %}
-        <div class="square-card">
-          <p class="fw-bold">{{ collection.name }}</p>
-          <p class="text-muted small">{{ collection.is_public|yesno:"Public,Private" }}</p>
-          <a href="{% url 'collection_detail' collection.id %}" class="stretched-link"></a>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% else %}
-    <div class="card mb-3 text-start">
-      <div class="card-body">
-        <h3 class="card-title">Your Collections</h3>
-        <p class="card-text">No collections available.</p>
-      </div>
-    </div>
-    {% endif %}
-
-    {% if user.profile.account_type == "L" %}
-    <h2>Upgrade Patron Accounts</h2>
-    {% if patrons %}
-    <ul>
-      {% for patron in patrons %}
-      <li>{{ patron.username }} <a href="{% url 'upgrade_user' patron.id %}">Upgrade to Librarian</a></li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p>No patron users available for upgrade.</p>
-    {% endif %}
-    {% endif %}
+<div class="container">
+  <!-- Welcome Section -->
+  <div class="text-center mb-4">
+    <h1>Welcome, {{ user.username }}!</h1>
   </div>
+
+  <h3 class="text-center mb-4">Browse Public Items</h3>
+  
+  {% if public_cds %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+      {% for cd in public_cds %}
+      <div class="col">
+        <div class="card h-100">
+          {% if cd.cover_image %}
+            <img src="{{ cd.cover_image.url }}" class="card-img-top" alt="Cover image" style="height: 200px; object-fit: cover;">
+          {% else %}
+            <div class="bg-light text-center p-5">No Cover Image</div>
+          {% endif %}
+          
+          <div class="card-body">
+            <h5 class="card-title">{{ cd.title }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ cd.artist }}</h6>
+            <p class="card-text">
+              <small class="text-muted">
+                Genre: {{ cd.genre }}<br>
+                Year: {{ cd.release_year }}
+              </small>
+            </p>
+            <p class="card-text">
+              <small class="text-muted">
+                <strong>Uploaded by:</strong> {{ cd.owner.username }}
+              </small>
+            </p>
+            {% if cd.collections.all %}
+              <p class="card-text">
+                <small class="text-muted">
+                  <strong>Collections:</strong><br>
+                  {% for collection in cd.collections.all %}
+                    {% if collection.is_public %}
+                      <a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a>{% if not forloop.last %}, {% endif %}
+                    {% endif %}
+                  {% endfor %}
+                </small>
+              </p>
+            {% else %}
+              <p class="card-text">
+                <small class="text-muted">Not in any collection</small>
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-center text-muted">No public CDs available.</p>
+  {% endif %}
 </div>
 
 <style>
-  .scroll-container {
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-  .scroll-content {
-    display: flex;
-    gap: 1rem;
-    padding-bottom: 1rem;
-  }
-  .square-card {
-    flex: 0 0 180px;
-    height: 180px;
-    background: linear-gradient(135deg, #f7f0ff, #eee6fc);
-    border-radius: 1rem;
-    padding: 1rem;
-    text-align: center;
-    transition: all 0.3s ease;
+  .card {
+    transition: transform 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    position: relative;
   }
-  .square-card:hover {
-    background: linear-gradient(135deg, #faf8ff, #f1e8fd);
-    transform: scale(1.05);
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
 </style>
 {% endblock %}

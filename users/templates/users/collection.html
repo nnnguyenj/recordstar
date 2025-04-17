@@ -13,9 +13,9 @@
     </a>
   </div>
 
-  {% if collections %}
+  {% if own_collections %}
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-    {% for collection in collections %}
+    {% for collection in own_collections %}
     <div class="col">
       <div class="card collection-card h-100 position-relative">
         <!-- Dropdown positioned absolutely, separate from main clickable body -->
@@ -41,14 +41,53 @@
         <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
           <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
           <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
+          <p class="text-muted small mt-2">{{ collection.cds.count }} CDs</p>
         </div>
       </div>
     </div>
-    
     {% endfor %}
   </div>
   {% else %}
     <p class="text-center text-muted">You have no collections yet.</p>
+  {% endif %}
+  
+  <!-- Other Users' Collections (Librarians Only) -->
+  {% if is_librarian and other_collections %}
+    <h2 class="fw-bold mt-5 mb-4" style="color: #560BAD;">Other Users' Collections</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+      {% for collection in other_collections %}
+      <div class="col">
+        <div class="card collection-card h-100 position-relative" style="background: linear-gradient(135deg, #e7f0ff, #dce6f9);">
+          <!-- Dropdown positioned absolutely, separate from main clickable body -->
+          <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
+            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              ⋮
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
+                  Make {{ collection.is_public|yesno:"Private,Public" }}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item text-danger delete-collection" href="#" data-id="{{ collection.id }}">
+                  Delete
+                </a>
+              </li>
+            </ul>
+          </div>
+      
+          <!-- Main body clickable for detail -->
+          <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
+            <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
+            <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
+            <p class="text-muted small mb-0">Owner: {{ collection.owner.username }}</p>
+            <p class="text-muted small mt-2">{{ collection.cds.count }} CDs</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   {% endif %}
 </div>
 

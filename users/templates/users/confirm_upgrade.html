@@ -1,15 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Confirm Upgrade</title>
-</head>
-<body>
-    <h2>Confirm Upgrade</h2>
-    <p>Are you sure you want to upgrade user <strong>{{ target_user.username }}</strong> to librarian?</p>
-    <form method="post">
+{% extends "base.html" %}
+{% load bootstrap5 %}
+
+{% block title %}Confirm Upgrade{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header bg-warning">
+      <h4>Confirm Upgrade</h4>
+    </div>
+    <div class="card-body">
+      <p class="mb-4">Are you sure you want to upgrade user <strong>{{ target_user.username }}</strong> to librarian?</p>
+      <form method="post">
         {% csrf_token %}
-        <button type="submit">Confirm Upgrade</button>
-    </form>
-    <a href="{% url 'dashboard' %}">Cancel</a>
-</body>
-</html>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success">Confirm Upgrade</button>
+          <a href="{% url 'librarians' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

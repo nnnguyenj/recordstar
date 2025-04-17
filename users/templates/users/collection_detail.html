@@ -5,7 +5,33 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2>{{ collection.name }}</h2>
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>{{ collection.name }}</h2>
+    {% if user == collection.owner or user.profile.account_type == 'L' %}
+    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#editCollectionForm" aria-expanded="false" aria-controls="editCollectionForm">
+      <i class="fa fa-edit"></i> Rename Collection
+    </button>
+    {% endif %}
+  </div>
+  
+  {% if collection.owner != user %}
+  <p class="text-muted">Owner: {{ collection.owner.username }}</p>
+  {% endif %}
+
+  <!-- Collapsible Edit Collection Form -->
+  <div class="collapse mb-3" id="editCollectionForm">
+    <div class="card card-body">
+      <form method="POST" action="{% url 'edit_collection' collection.id %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="collection_name" class="form-label">Collection Name</label>
+          <input type="text" class="form-control" id="collection_name" name="name" value="{{ collection.name }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </form>
+    </div>  
+  </div>
+  
   <p><strong>Privacy:</strong> {{ collection.is_public|yesno:"Public,Private" }}</p>
 
   <h4 class="mt-4">CDs in This Collection</h4>
@@ -16,7 +42,16 @@
           <div>
             <strong>{{ cd.title }}</strong> by {{ cd.artist }}<br>
             <small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small>
+            {% if user.profile.account_type == 'L' and cd.owner != user %}
+            <br><small class="text-muted">Owner: {{ cd.owner.username }}</small>
+            {% endif %}
           </div>
+          {% if user == collection.owner or user.profile.account_type == 'L' %}
+          <form method="POST" action="{% url 'remove_cd_from_collection' collection.id cd.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">Return to Library</button>
+          </form>
+          {% endif %}
         </li>
       {% endfor %}
     </ul>
@@ -24,48 +59,59 @@
     <p class="text-muted">No CDs in this collection yet.</p>
   {% endif %}
 
-  <form method="POST" action="{% url 'toggle_collection_privacy' collection.id %}">
+  {% if user == collection.owner or user.profile.account_type == 'L' %}
+    <form method="POST" action="{% url 'toggle_collection_privacy' collection.id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary mb-3">
+        Make {{ collection.is_public|yesno:"Private,Public" }}
+      </button>
+    </form>
+    
+    <hr>
+
+    <h4>Add CD from Your Library</h4>
+      {% if available_cds %}
+      <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="cd_id" class="form-label">
+            {% if user.profile.account_type == 'L' %}
+              Select any CD to add
+            {% else %}
+              Select CD from your library
+            {% endif %}
+          </label>
+          <select name="cd_id" id="cd_id" class="form-select" required>
+            <option value="">-- Select a CD --</option>
+            {% for cd in available_cds %}
+              <option value="{{ cd.id }}">
+                {{ cd.title }} by {{ cd.artist }}
+                {% if cd.release_year %} ({{ cd.release_year }}){% endif %}
+                {% if user.profile.account_type == 'L' and cd.owner != user %} [Owner: {{ cd.owner.username }}]{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-success">Add to Collection</button>
+      </form>
+    {% else %}
+      <p class="text-muted">No CDs available to add.</p>
+      <a href="{% url 'library' %}" class="btn btn-primary mb-3">Go to Library to Add CDs</a>
+    {% endif %}
+  {% endif %}
+
+  <hr>
+  <div class="d-flex justify-content-between mb-4">
+    <a href="{% url 'library' %}" class="btn btn-primary">Back to Library</a>
+    <a href="{% url 'collection' %}" class="btn btn-secondary">Back to Collections</a>
+  </div>
+
+  {% if user == collection.owner or user.profile.account_type == 'L' %}
+  <hr>
+  <form method="POST" action="{% url 'delete_collection' collection.id %}" onsubmit="return confirm('Are you sure you want to delete this collection?');">
     {% csrf_token %}
-    <button type="submit" class="btn btn-outline-secondary mb-3">
-      Make {{ collection.is_public|yesno:"Private,Public" }}
-    </button>
+    <button type="submit" class="btn btn-danger">Delete This Collection</button>
   </form>
-  
-  <hr>
-
-  <hr>
-  <h4>Add a New CD to This Collection</h4>
-  <form method="POST">
-    {% csrf_token %}
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label for="title" class="form-label">CD Title</label>
-        <input type="text" name="title" id="title" class="form-control" required>
-      </div>
-      <div class="col-md-6">
-        <label for="artist" class="form-label">Artist</label>
-        <input type="text" name="artist" id="artist" class="form-control" required>
-      </div>
-      <div class="col-md-6">
-        <label for="genre" class="form-label">Genre</label>
-        <input type="text" name="genre" id="genre" class="form-control">
-      </div>
-      <div class="col-md-6">
-        <label for="release_year" class="form-label">Release Year</label>
-        <input type="number" name="release_year" id="release_year" class="form-control">
-      </div>
-    </div>
-    <button type="submit" class="btn btn-success mt-3">Add CD to Collection</button>
-    <a href="{% url 'collection' %}" class="btn btn-secondary mt-3 ms-2">Back</a>
-  </form>  
-
-  <hr>
-<form method="POST" action="{% url 'delete_collection' collection.id %}" onsubmit="return confirm('Are you sure you want to delete this collection?');">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-danger">Delete This Collection</button>
-</form>
+  {% endif %}
 </div>
-
-
 {% endblock %}
-

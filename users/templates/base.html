@@ -106,15 +106,17 @@
           <li class="nav-item"><a class="nav-link" href="{% url 'recent_activity' %}">Recent Activity</a></li>
         </ul>
         
-        <h2 class="mt-4 h4">Your Library</h2>
+        <h2 class="mt-4 h4">Catalog</h2>
         <ul class="nav flex-column">
-          <li class="nav-item"><a class="nav-link" href="{% url 'collection' %}">Your Collection</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'ratings' %}">Your Ratings</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'library' %}">Library</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'collection' %}">Collections</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'ratings' %}">Ratings</a></li>
         </ul>
 
-        <h2 class="mt-4 h4">Friends</h2>
+        <h2 class="mt-4 h4">Social</h2>
         <ul class="nav flex-column">
           <li class="nav-item"><a class="nav-link" href="{% url 'friends' %}">My Friends</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'librarians' %}">Librarians</a></li>
         </ul>
 
         <h2 class="mt-4 h4">User Settings</h2>

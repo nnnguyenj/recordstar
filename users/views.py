@@ -9,8 +9,9 @@ from .models import Profile
 from .models import FriendActivity
 from .models import Rating
 from .forms import RatingForm
-from .models import Collection
+from .models import Collection, Library
 from recordstar.models import CD
+from django.contrib import messages
 
 
 def index_view(request):
@@ -30,10 +31,16 @@ def google_login(request):
 def dashboard_view(request):
     context = {"user": request.user}
     
-    # Add recent activity data
-    context["recent_friends"] = FriendActivity.objects.filter(user=request.user).order_by('-timestamp')[:5]
-    context["recent_collections"] = Collection.objects.filter(owner=request.user).order_by('-created_at')[:5]
-    context["recent_ratings"] = Rating.objects.filter(user=request.user).order_by('-created_at')[:5]
+    # get CDs not in any collection
+    cds_not_in_collections = CD.objects.filter(collections__isnull=True)
+    
+    # get CDs in public collections
+    cds_in_public_collections = CD.objects.filter(collections__is_public=True)
+    
+    # combine the querysets
+    public_cds = list(cds_not_in_collections) + list(cds_in_public_collections)
+    
+    context["public_cds"] = public_cds
 
     # If current user is a librarian, retrieve all patron users.
     if request.user.profile.account_type == 'L':
@@ -62,7 +69,7 @@ def collection_view(request):
 @login_required
 def my_collections_view(request):
     collections = request.user.collections.all()
-    return render(request, "users/collections.html", {"collections": collections})
+    return render(request, "users/collection.html", {"collections": collections})
 
 @login_required
 def ratings_view(request):
@@ -106,7 +113,9 @@ def upgrade_user_to_librarian(request, user_id):
     if request.method == 'POST':
         target_user.profile.account_type = 'L'
         target_user.profile.save()
-        return HttpResponse("User successfully upgraded to librarian.")
+        # Add success message and redirect
+        messages.success(request, f"Success! Upgraded {target_user.username} to a Librarian!")
+        return redirect('librarians')
     else:
         return render(request, 'users/confirm_upgrade.html', {'target_user': target_user})
 
@@ -166,9 +175,34 @@ def friends_view(request):
     })
 
 @login_required
+def librarians_view(request):
+    librarians = User.objects.filter(profile__account_type='L')
+    context = {
+        "librarians": librarians,
+    }
+    if request.user.profile.account_type == 'L':
+        patrons = User.objects.filter(profile__account_type='P')
+        context["patrons"] = patrons
+    
+    return render(request, "users/librarians_list.html", context)
+
+@login_required
 def my_collections_view(request):
-    collections = Collection.objects.filter(owner=request.user)
-    return render(request, "users/collection.html", {"collections": collections})
+    # Get the user's own collections
+    own_collections = Collection.objects.filter(owner=request.user)
+    
+    # Initialize other_collections as None
+    other_collections = None
+    
+    # If user is a librarian, get all other collections
+    if request.user.profile.account_type == 'L':
+        other_collections = Collection.objects.exclude(owner=request.user)
+    
+    return render(request, "users/collection.html", {
+        "own_collections": own_collections,
+        "other_collections": other_collections,
+        "is_librarian": request.user.profile.account_type == 'L'
+    })
 
 @login_required
 def add_collection_view(request):
@@ -182,16 +216,168 @@ def add_collection_view(request):
 
 @login_required
 def collection_detail_view(request, collection_id):
-    collection = get_object_or_404(Collection, id=collection_id)
-
-    if not collection.is_public and collection.owner != request.user:
-        if request.user.profile.account_type == 'P':
+    if request.user.profile.account_type == 'L':
+        collection = get_object_or_404(Collection, id=collection_id)
+    else:
+        collection = get_object_or_404(Collection, id=collection_id)
+        if not collection.is_public and collection.owner != request.user:
             return render(request, "users/collection_detail_limited.html", {
                 "collection": collection
             })
 
-    available_cds = CD.objects.filter(owner=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
+    if request.user.profile.account_type == 'L':
+        available_cds = CD.objects.exclude(id__in=collection.cds.values_list('id', flat=True))
+    else:
+        available_cds = CD.objects.filter(owner=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
 
+    if request.method == "POST":
+        # only add from library to collection
+        cd_id = request.POST.get("cd_id")
+        if cd_id:
+            if request.user.profile.account_type == 'L':
+                cd = get_object_or_404(CD, id=cd_id)
+            else:
+                cd = get_object_or_404(CD, id=cd_id, owner=request.user)
+                
+            collection.cds.add(cd)
+            return redirect("collection_detail", collection_id=collection.id)
+        
+    return render(request, "users/collection_detail.html", {
+        "collection": collection,
+        "available_cds": available_cds,
+        "is_librarian": request.user.profile.account_type == 'L',
+    })
+
+
+
+@login_required
+def remove_cd_from_collection(request, collection_id, cd_id):
+    # allow librarians to remove CDs from any collection
+    if request.user.profile.account_type == 'L':
+        collection = get_object_or_404(Collection, id=collection_id)
+    else:
+        collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    
+    cd = get_object_or_404(CD, id=cd_id)
+    if request.method == "POST":
+        collection.cds.remove(cd)
+    return redirect("collection_detail", collection_id=collection.id)
+
+@login_required
+def delete_collection_view(request, collection_id):
+    # allow librarians to delete any collection
+    if request.user.profile.account_type == 'L':
+        collection = get_object_or_404(Collection, id=collection_id)
+    else:
+        collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+
+    if request.method == "POST":
+        collection.delete()
+        return redirect("collection")
+
+    return render(request, "users/confirm_delete.html", {"collection": collection})
+
+@login_required
+def edit_collection(request, collection_id):
+    # allow librarians to edit any collection
+    if request.user.profile.account_type == 'L':
+        collection = get_object_or_404(Collection, id=collection_id)
+    else:
+        collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+    
+    if request.method == "POST":
+        name = request.POST.get("name")
+        if name:
+            collection.name = name
+            collection.save()
+            return redirect("collection_detail", collection_id=collection.id)
+    
+    
+    # if not POST or form invalid, redirect back to collection detail
+    return redirect("collection_detail", collection_id=collection.id)
+
+@login_required
+def toggle_collection_privacy(request, collection_id):
+    # allow librarians to toggle privacy for any collection
+    if request.user.profile.account_type == 'L':
+        collection = get_object_or_404(Collection, id=collection_id)
+    else:
+        collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+
+    if request.method == "POST":
+        collection.is_public = not collection.is_public
+        collection.save()
+    return redirect("collection_detail", collection_id=collection.id)
+
+# LIBRARY VIEWS
+
+@login_required
+def library_view(request):
+    # librarians get all CDs, patrons only their own
+    if request.user.profile.account_type == 'L':
+        user_cds = CD.objects.all()
+    else:
+        user_cds = CD.objects.filter(owner=request.user)
+    
+    cd_info = []
+    for cd in user_cds:
+        if request.user.profile.account_type == 'L':
+            collection = cd.collections.first()
+            is_owned = cd.owner == request.user
+        else:
+            collection = cd.collections.filter(owner=request.user).first()
+            is_owned = True  # always true for patrons (only shows their CDs)
+        
+        cd_info.append({
+            'cd': cd,
+            'collection': collection,
+            'is_owned': is_owned
+        })
+    
+    if request.method == "POST":
+        title = request.POST.get("title")
+        artist = request.POST.get("artist")
+        genre = request.POST.get("genre")
+        release_year = request.POST.get("release_year")
+        description = request.POST.get("description")
+
+        # cover image required
+        if 'cover_image' not in request.FILES:
+            return render(request, "users/library.html", {
+                "cd_info": cd_info,
+                "error": "Cover image is required",
+                "is_librarian": request.user.profile.account_type == 'L',
+                "form_data": {
+                    "title": title,
+                    "artist": artist,
+                    "genre": genre,
+                    "release_year": release_year,
+                    "description": description,
+                }
+            })
+        
+        if title and artist:
+            # Create the CD with the current user as owner
+            cd = CD.objects.create(
+                title=title,
+                artist=artist,
+                genre=genre,
+                release_year=release_year or None,
+                description=description or "",
+                owner=request.user,
+            )
+            cd.cover_image = request.FILES['cover_image']
+            cd.save()
+
+            return redirect("library")
+    
+    return render(request, "users/library.html", {
+        "cd_info": cd_info,
+        "is_librarian": request.user.profile.account_type == 'L',
+    })
+
+@login_required
+def add_cd_to_library(request):
     if request.method == "POST":
         title = request.POST.get("title")
         artist = request.POST.get("artist")
@@ -206,60 +392,53 @@ def collection_detail_view(request, collection_id):
                 release_year=release_year or None,
                 owner=request.user,
             )
-            collection.cds.add(cd)
-
-            Record.objects.create(
-                user=request.user,
-                cd=cd,
-                user_rating=0,
-                review=""
-            )
-
-            return redirect("collection_detail", collection_id=collection.id)
-
-    return render(request, "users/collection_detail.html", {
-        "collection": collection,
-        "available_cds": available_cds,
-    })
-
-
+            return redirect("library")
+    
+    return render(request, "users/add_cd.html")
 
 @login_required
-def remove_cd_from_collection(request, collection_id, cd_id):
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+def delete_cd(request, cd_id):
     cd = get_object_or_404(CD, id=cd_id, owner=request.user)
     if request.method == "POST":
-        collection.cds.remove(cd)
-    return redirect("collection_detail", collection_id=collection.id)
+        cd.delete()
+    return redirect("library")
 
 @login_required
-def delete_collection_view(request, collection_id):
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-
+def edit_cd(request, cd_id):
+    cd = get_object_or_404(CD, id=cd_id, owner=request.user)
+    
     if request.method == "POST":
-        collection.delete()
-        return redirect("collection")
-
-    return render(request, "users/confirm_delete.html", {"collection": collection})
-
-@login_required
-def toggle_collection_privacy(request, collection_id):
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-
-    if request.method == "POST":
-        collection.is_public = not collection.is_public
-        collection.save()
-    return redirect("collection_detail", collection_id=collection.id)
-
-@login_required
-def browse_collections(request):
-    if request.user.profile.account_type == 'P':
-        collections = Collection.objects.filter(is_public=True) | Collection.objects.filter(owner=request.user)
-    else:
-        collections = Collection.objects.all()
-
-    return render(request, "users/browse_collections.html", {
-        "collections": collections.distinct(),
-    })
-
-
+        title = request.POST.get("title")
+        artist = request.POST.get("artist")
+        genre = request.POST.get("genre")
+        release_year = request.POST.get("release_year")
+        description = request.POST.get("description")
+        
+        if not cd.cover_image and 'cover_image' not in request.FILES:
+            return render(request, "users/edit_cd.html", {
+                "cd": cd,
+                "error": "Cover image is required",
+                "form_data": {
+                    "title": title,
+                    "artist": artist,
+                    "genre": genre,
+                    "release_year": release_year,
+                    "description": description,
+                }
+            })
+        
+        cd.title = title
+        cd.artist = artist
+        cd.genre = genre
+        cd.release_year = release_year or None
+        cd.description = description
+        
+        # Handle cover image upload
+        if 'cover_image' in request.FILES:
+            cd.cover_image = request.FILES['cover_image']
+        
+        cd.save()
+        return redirect("library")
+    
+    # Display edit form
+    return render(request, "users/edit_cd.html", {"cd": cd})
