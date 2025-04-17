@@ -4,13 +4,8 @@ from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
-from .models import Record
-from .models import Profile
-from .models import FriendActivity
-from .models import Rating
 from .forms import RatingForm
-from .models import Collection, Library
-from recordstar.models import CD
+from .models import Collection, Library, CD, Rating, FriendActivity, Profile
 from django.contrib import messages
 from django.db.models import Q
 
@@ -57,7 +52,7 @@ def recent_activity_view(request):
 
 @login_required
 def collection_view(request):
-    records = Record.objects.filter(user=request.user)
+    records = CD.objects.filter(user=request.user)
     return render(request, "users/collection.html", {"records": records})
 
 
@@ -114,32 +109,10 @@ def upgrade_user_to_librarian(request, user_id):
     else:
         return render(request, 'users/confirm_upgrade.html', {'target_user': target_user})
 
-@login_required
-def add_record(request):
-    from recordstar.models import CD
-
-    if request.method == 'POST':
-        cd_id = request.POST.get('cd_id')
-        rating = request.POST.get('rating')
-        review = request.POST.get('review')
-
-        cd = get_object_or_404(CD, id=cd_id)
-
-        Record.objects.create(
-            user=request.user,
-            cd=cd,
-            rating=rating,
-            review=review,
-        )
-        return redirect('collection')
-
-    all_cds = CD.objects.all()
-    return render(request, 'users/add_record.html', {"all_cds": all_cds})
-
 
 @login_required
 def delete_record_view(request, record_id):
-    record = get_object_or_404(Record, id=record_id, user=request.user)
+    record = get_object_or_404(CD, id=record_id, user=request.user)
     if request.method == 'POST':
         record.delete()
         return redirect("collection")

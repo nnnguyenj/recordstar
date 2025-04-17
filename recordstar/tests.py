@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
-from .models import CD
+from users.models import CD
 from users.models import Profile
 from django.urls import reverse
 

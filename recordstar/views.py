@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.views import generic
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash, authenticate, login
-from .models import CD
+from users.models import CD
 from django.contrib import messages
 
 # SHERRIFF: very basic index page created

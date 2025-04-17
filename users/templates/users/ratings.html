@@ -14,7 +14,7 @@
       <ul class="list-group mb-5">
         {% for rating in ratings %}
           <li class="list-group-item">
-            <strong>{{ rating.record.cd.title }}</strong> by {{ rating.record.cd.artist }}<br>
+            <strong>{{ rating.cd.title }}</strong> by {{ rating.cd.artist }}<br>
             Rating: {{ rating.rating_value }} / 10<br>
             {% if rating.review %}
               <em>{{ rating.review }}</em><br>
