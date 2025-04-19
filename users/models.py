@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 import uuid
 
 # Create your models here.
+def get_default_profile_image():
+    return 'default.jpg'
 
 class Profile(models.Model):
     ACCOUNT_TYPE_CHOICES = [

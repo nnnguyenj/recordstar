@@ -23,7 +23,13 @@
                   <input type="file" name="profile_picture" id="profileImageInput" accept="image/*" class="d-none" onchange="this.form.submit();">
                 </form>
               </li>
-            </ul>
+              <li>
+                <form method="POST" action="{% url 'delete_profile_picture' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item text-danger">Delete Profile Picture</button>
+                </form>
+              </li>
+            </ul>            
           </div>
         </div>
         <!-- Profile Details -->

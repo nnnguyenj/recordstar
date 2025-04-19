@@ -84,6 +84,13 @@ def ratings_view(request):
 
 @login_required
 def profile_view(request):
+    if request.method == 'POST' and 'profile_picture' in request.FILES:
+        profile = request.user.profile
+        profile.image = request.FILES['profile_picture']
+        profile.save()
+        messages.success(request, "Profile picture updated.")
+        return redirect('profile')  # make sure this matches your URL name
+    
     return render(request, "users/profile.html")
 
 @login_required
@@ -538,3 +545,13 @@ def create_collection_with_cd(request, cd_id):
             messages.success(request, f"Created collection '{collection.name}' and added '{cd.title}'.")
     
     return redirect("library")
+
+@login_required
+def delete_profile_picture(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        profile.image = 'default.jpg'  # or whatever your default image path is
+        profile.save()
+        messages.success(request, "Profile picture reset to default.")
+    return redirect('profile')  # or whatever your profile view name is
+

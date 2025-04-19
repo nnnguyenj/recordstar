@@ -20,23 +20,15 @@
       </a>      
       {% endif %}
     </div>
-    <p class="text-muted mt-2">Privacy: {{ collection.is_public|yesno:"Public,Private" }}</p>
-  </div>
-
-  <!-- Collapsible Edit Collection Form 
-  <div class="collapse mb-3" id="editCollectionForm">
-    <div class="card card-body">
-      <form method="POST" action="{% url 'edit_collection' collection.id %}">
-        {% csrf_token %}
-        <div class="mb-3">
-          <label for="collection_name" class="form-label">Collection Name</label>
-          <input type="text" class="form-control" id="collection_name" name="name" value="{{ collection.name }}" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-      </form>
-    </div>
-  </div>
-  -->
+      <p class="text-muted mt-2">
+        Privacy: 
+        {% if collection.owner.profile.account_type == 'P' %}
+          Public
+        {% else %}
+          {{ collection.is_public|yesno:"Public,Private" }}
+        {% endif %}
+      </p>
+      </div>
 
   <h4 class="mt-4">CDs in This Collection</h4>
   {% if collection.cds.all %}
@@ -63,14 +55,16 @@
     <p class="text-muted">No CDs in this collection yet.</p>
   {% endif %}
 
-  {% if user == collection.owner or user.profile.account_type == 'L' %}
-    <form method="POST" action="{% url 'toggle_collection_privacy' collection.id %}">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-outline-secondary mb-3">
-        Make {{ collection.is_public|yesno:"Private,Public" }}
-      </button>
-    </form>
+  {% if user.profile.account_type == 'L' %}
+  <form method="POST" action="{% url 'toggle_collection_privacy' collection.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-secondary mb-3">
+      Make {{ collection.is_public|yesno:"Private,Public" }}
+    </button>
+  </form>
+{% endif %}
 
+{% if user == collection.owner or user.profile.account_type == 'L' %}
     <hr>
 
     <h4>Add CD from Your Library</h4>
