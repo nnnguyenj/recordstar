@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 from allauth.account.views import LoginView, SignupView
+from recordstar.views import anon_user_welcome
+
 
 urlpatterns = [
     path("", lambda request: redirect("account_login"), name="home_redirect"),  # always redirect root to login
@@ -28,4 +30,6 @@ urlpatterns = [
     path("recordstar/", include("recordstar.urls")),
     path("accounts/", include("allauth.urls")),
     path("", include("users.urls")),  # include your user views
+    path('anon-user/', anon_user_welcome, name='anon_user_welcome'),
+
 ]

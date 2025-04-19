@@ -48,3 +48,6 @@ from django.shortcuts import render
 
 def dashboard_view(request):
     return render(request, 'dashboard.html')
+
+def anon_user_welcome(request):
+    return render(request, 'recordstar/anon_user_welcome.html')

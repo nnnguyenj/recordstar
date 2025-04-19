@@ -46,7 +46,7 @@ CSP_FONT_SRC = ("'self'",)
 # Production-only security settings
 if not IS_DEVELOPMENT:
     # HTTPS settings
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
     # HSTS settings

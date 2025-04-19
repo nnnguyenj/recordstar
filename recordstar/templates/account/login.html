@@ -265,12 +265,12 @@
               </form>
             
               <!-- Footer -->
-              <div class="text-center" style="font-size: 0.9rem;">
+              <div class="text-center" style="font-size: 0.7rem; line-height: 1;">
                 <span>New to RecordStar?</span>
-                <a href="{% url 'account_signup' %}" class="create-link ms-1">
-                  Create an account
-                </a>                
-              </div>
+                <a href="{% url 'account_signup' %}" class="create-link ms-1">Create an account</a>
+                <span class="mx-1">or</span>
+                <a href="{% url 'anon_user_welcome' %}" class="create-link">Browse as a Guest</a>
+              </div>              
             </div>
           </div>
 
