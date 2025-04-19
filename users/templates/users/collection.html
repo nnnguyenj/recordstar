@@ -14,7 +14,7 @@
   </div>
 
   {% if own_collections %}
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3 g-md-4">
     {% for collection in own_collections %}
     <div class="col">
       <div class="card collection-card h-100 position-relative">
@@ -24,11 +24,13 @@
             ⋮
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li>
-              <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
-                Make {{ collection.is_public|yesno:"Private,Public" }}
-              </a>
-            </li>
+            {% if user.profile.account_type == "L" %}
+              <li>
+                <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
+                  Make {{ collection.is_public|yesno:"Private,Public" }}
+                </a>
+              </li>
+            {% endif %}
             <li>
               <a class="dropdown-item text-danger delete-collection" href="#" data-id="{{ collection.id }}" data-name="{{ collection.name }}">
                 Delete
@@ -117,18 +119,30 @@
 
 <style>
   .collection-card {
+    width: 100%;
+    max-width: 210px;
+    aspect-ratio: 1 / 1; /* Keeps it perfectly square */
     background: linear-gradient(135deg, #f0f0f0, #e2e2f9);
     border-radius: 1rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: relative;
-    overflow: visible; /* Make room for dropdown */
+    margin: auto;
   }
   
   .collection-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: scale(1.03);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
     background: linear-gradient(135deg, #e7dbff, #c2a7ff);
   }
+  
+  .card-body h5 {
+    font-size: 1rem;
+  }
+  
+  .card-body p {
+    font-size: 0.8rem;
+  }
+  
   .create-btn {
     border-color: #560BAD;
     color: #560BAD;

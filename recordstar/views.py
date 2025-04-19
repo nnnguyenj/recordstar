@@ -27,7 +27,7 @@ def first_time_setup(request):
         if user:
             login(request, user)
 
-        return redirect("dashboard_view")
+        return redirect("dashboard")
 
     return render(request, "recordstar/first_time_setup.html")
 

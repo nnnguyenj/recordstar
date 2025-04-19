@@ -37,5 +37,7 @@ urlpatterns = [
     path('library/add/', views.add_cd_to_library, name='add_cd_to_library'),
     path('library/edit/<int:cd_id>/', views.edit_cd, name='edit_cd'),
     path('library/delete/<int:cd_id>/', views.delete_cd, name='delete_cd'),
+    path('cds/<int:cd_id>/add-to-collection/', views.add_cd_to_collection, name='add_cd_to_collection'),
+    path('cds/<int:cd_id>/create-collection/', views.create_collection_with_cd, name='create_collection_with_cd'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

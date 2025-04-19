@@ -302,6 +302,8 @@ def library_view(request):
             'is_owned': is_owned
         })
     
+        user_collections = Collection.objects.filter(owner=request.user)
+
     if request.method == "POST":
         title = request.POST.get("title")
         artist = request.POST.get("artist")
@@ -341,6 +343,7 @@ def library_view(request):
     return render(request, "users/library.html", {
         "cd_info": cd_info,
         "is_librarian": request.user.profile.account_type == 'L',
+        "user_collections": user_collections,
     })
 
 @login_required
@@ -500,3 +503,38 @@ def delete_rating(request, rating_id):
         return redirect('ratings')
         
     return redirect('ratings')
+
+@login_required
+def add_cd_to_collection(request, cd_id):
+    cd = get_object_or_404(CD, id=cd_id)
+    collection_id = request.POST.get("collection_id")
+
+    # patrons can only add their own CDs
+    if request.user.profile.account_type != 'L' and cd.owner != request.user:
+        return HttpResponseForbidden("Patrons can only add their own CDs to collections.")
+
+    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
+
+    if request.method == "POST":
+        collection.cds.add(cd)
+        messages.success(request, f"Added '{cd.title}' to '{collection.name}'.")
+    
+    return redirect("library")
+
+@login_required
+def create_collection_with_cd(request, cd_id):
+    cd = get_object_or_404(CD, id=cd_id)
+
+    # patrons can only add their own CDs
+    if request.user.profile.account_type != 'L' and cd.owner != request.user:
+        return HttpResponseForbidden("Patrons can only create collections with their own CDs.")
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        if name:
+            is_public = True if request.user.profile.account_type == 'P' else request.POST.get("is_public") == "on"
+            collection = Collection.objects.create(owner=request.user, name=name, is_public=is_public)
+            collection.cds.add(cd)
+            messages.success(request, f"Created collection '{collection.name}' and added '{cd.title}'.")
+    
+    return redirect("library")

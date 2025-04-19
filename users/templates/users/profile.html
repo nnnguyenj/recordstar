@@ -5,27 +5,32 @@
 {% block content %}
 <div class="container mt-4">
   <div class="card shadow-sm">
-    <div class="card-header bg-primary text-white">
-      <h2>{{ user.username }}'s Profile</h2>
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h2 class="mb-0">{{ user.username }}'s Profile</h2>
     </div>
     <div class="card-body">
       <div class="row">
-        <!-- Profile Image -->
-        <div class="col-md-3 text-center">
+        <!-- Profile Image with Dropdown -->
+        <div class="col-md-3 text-center position-relative">
           <img src="{{ user.profile.image.url }}" alt="Profile Image" class="img-thumbnail mb-3">
+          <div class="dropdown position-absolute" style="top: 10px; right: 20px;">
+            <button class="dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false"></button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <li>
+                <form method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <label class="dropdown-item" for="profileImageInput" style="cursor: pointer;">Change Profile Picture</label>
+                  <input type="file" name="profile_picture" id="profileImageInput" accept="image/*" class="d-none" onchange="this.form.submit();">
+                </form>
+              </li>
+            </ul>
+          </div>
         </div>
         <!-- Profile Details -->
         <div class="col-md-9">
           <p><strong>Email:</strong> {{ user.email }}</p>
-          <p>
-            <strong>Account Type:</strong>
-            {{ user.profile.get_account_type_display }}
-          </p>
-          <p>
-            <strong>Joined:</strong>
-            {{ user.date_joined|date:"F j, Y" }}
-          </p>
-          <!-- Additional info could go here -->
+          <p><strong>Account Type:</strong> {{ user.profile.get_account_type_display }}</p>
+          <p><strong>Joined:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
         </div>
       </div>
     </div>
