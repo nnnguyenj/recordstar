@@ -310,7 +310,7 @@ def library_view(request):
             'is_owned': is_owned
         })
     
-        user_collections = Collection.objects.filter(owner=request.user)
+    user_collections = Collection.objects.filter(owner=request.user)
 
     if request.method == "POST":
         title = request.POST.get("title")
