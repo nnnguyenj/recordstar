@@ -40,5 +40,5 @@ urlpatterns = [
     path('cds/<int:cd_id>/add-to-collection/', views.add_cd_to_collection, name='add_cd_to_collection'),
     path('cds/<int:cd_id>/create-collection/', views.create_collection_with_cd, name='create_collection_with_cd'),
     path('profile/delete-picture/', views.delete_profile_picture, name='delete_profile_picture'),
-
+    path('dashboard/search/', views.search_results, name='search_results'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

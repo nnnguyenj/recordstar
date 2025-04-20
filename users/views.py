@@ -8,6 +8,7 @@ from .forms import RatingForm
 from .models import Collection, Library, CD, Rating, FriendActivity, Profile
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.models import AnonymousUser
 
 
 def index_view(request):
@@ -554,4 +555,18 @@ def delete_profile_picture(request):
         profile.save()
         messages.success(request, "Profile picture reset to default.")
     return redirect('profile')  # or whatever your profile view name is
+
+
+def search_results(request):
+    query = request.GET.get('q')
+    results = CD.objects.filter(
+        Q(title__icontains=query) |
+        Q(artist__icontains=query) |
+        Q(unique_code__icontains=query)
+    ) if query else []
+
+    return render(request, 'users/search_results.html', {
+        'results': results,
+        'query': query,
+    })
 
