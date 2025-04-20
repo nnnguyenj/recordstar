@@ -97,9 +97,10 @@
       <nav class="col-md-3 col-lg-2 sidebar">
         <h2>Search</h2>
         <div class="search-container">
-          <form action="/dashboard" method="GET">
+          <form action="{% url 'search_results' %}" method="GET">
             <i class="fa fa-search"></i>
-            <input type="text" name="search" placeholder="Search..." class="form-control">
+            <input type="text" name="q" placeholder="Search..." class="form-control"
+              value="{{ request.GET.q }}">
           </form>
         </div>
         <ul class="nav flex-column">

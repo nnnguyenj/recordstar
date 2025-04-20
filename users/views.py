@@ -8,6 +8,7 @@ from .forms import RatingForm
 from .models import Collection, Library, CD, Rating, FriendActivity, Profile
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.models import AnonymousUser
 
 
 def index_view(request):
@@ -555,3 +556,34 @@ def delete_profile_picture(request):
         messages.success(request, "Profile picture reset to default.")
     return redirect('profile')  # or whatever your profile view name is
 
+
+def search_results(request):
+    query = request.GET.get('q')
+    results = CD.objects.filter(
+        Q(title__icontains=query) |
+        Q(artist__icontains=query) |
+        Q(genre__icontains=query) |
+        Q(description__icontains=query)
+    ) if query else []
+
+    return render(request, 'users/search_results.html', {
+        'results': results,
+        'query': query,
+    })
+
+def cd_detail(request, cd_id):
+    cd = get_object_or_404(CD, id=cd_id)
+    user_collections = Collection.objects.filter(owner=request.user) if request.user.is_authenticated else []
+
+    is_librarian = False
+    if hasattr(request.user, 'profile'):
+        is_librarian = request.user.profile.account_type == 'L'
+
+    is_owned = cd.owner == request.user
+
+    return render(request, 'users/cd_detail.html', {
+        'cd': cd,
+        'user_collections': user_collections,
+        'is_librarian': is_librarian,
+        'is_owned': is_owned,
+    })
