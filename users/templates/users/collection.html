@@ -20,10 +20,8 @@
       <div class="card collection-card h-100 position-relative">
         <!-- Dropdown positioned absolutely, separate from main clickable body -->
         <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
-          <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            ⋮
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
+            <button class="dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false"></button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
             {% if user.profile.account_type == "L" %}
               <li>
                 <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">

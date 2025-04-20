@@ -12,14 +12,16 @@
 
   <!-- Header with Title and Privacy -->
   <div class="d-flex flex-column align-items-center mb-4">
-    <div class="d-flex align-items-center gap-2">
-      <h2 class="fw-bold mb-0 text-center">{{ collection.name }}</h2>
+    <div class="d-flex align-items-center gap-2 position-relative hover-container" style="cursor: pointer;">
+      <h2 class="fw-bold mb-0 text-center">
+        {{ collection.name }}
+      </h2>
       {% if user == collection.owner or user.profile.account_type == 'L' %}
-      <a class="text-muted" data-bs-toggle="modal" data-bs-target="#renameModal" role="button">
-        <i class="fa fa-pencil-alt"></i>
-      </a>      
+        <a class="text-muted pencil-icon" data-bs-toggle="modal" data-bs-target="#renameModal" role="button">
+          <i class="fa fa-pencil-alt"></i>
+        </a>
       {% endif %}
-    </div>
+    </div>    
       <p class="text-muted mt-2">
         Privacy: 
         {% if collection.owner.profile.account_type == 'P' %}
@@ -130,5 +132,28 @@
     </div>
   </div>
 </div>
+
+<style>
+  .pencil-icon {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .hover-container:hover .pencil-icon {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>
+
+<script>
+  const title = document.getElementById("collectionTitleHover");
+  const pencil = document.getElementById("pencilIcon");
+
+  if (title && pencil) {
+    title.addEventListener("mouseenter", () => pencil.classList.remove("d-none"));
+    title.addEventListener("mouseleave", () => pencil.classList.add("d-none"));
+  }
+</script>
 
 {% endblock %}
