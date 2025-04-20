@@ -562,8 +562,7 @@ def search_results(request):
     results = CD.objects.filter(
         Q(title__icontains=query) |
         Q(artist__icontains=query) |
-        Q(genre__icontains=query) |
-        Q(description__icontains=query)
+        Q(unique_code__icontains=query)
     ) if query else []
 
     return render(request, 'users/search_results.html', {
@@ -571,19 +570,3 @@ def search_results(request):
         'query': query,
     })
 
-def cd_detail(request, cd_id):
-    cd = get_object_or_404(CD, id=cd_id)
-    user_collections = Collection.objects.filter(owner=request.user) if request.user.is_authenticated else []
-
-    is_librarian = False
-    if hasattr(request.user, 'profile'):
-        is_librarian = request.user.profile.account_type == 'L'
-
-    is_owned = cd.owner == request.user
-
-    return render(request, 'users/cd_detail.html', {
-        'cd': cd,
-        'user_collections': user_collections,
-        'is_librarian': is_librarian,
-        'is_owned': is_owned,
-    })
