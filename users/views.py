@@ -551,7 +551,7 @@ def create_collection_with_cd(request, cd_id):
 def delete_profile_picture(request):
     if request.method == 'POST':
         profile = request.user.profile
-        profile.image = 'default.jpg'  # or whatever your default image path is
+        profile.image = 'profile_pics/default.jpg'
         profile.save()
         messages.success(request, "Profile picture reset to default.")
     return redirect('profile')  # or whatever your profile view name is

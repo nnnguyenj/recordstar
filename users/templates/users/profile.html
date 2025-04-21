@@ -3,6 +3,7 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
+
 <div class="container mt-4">
   <div class="card shadow-sm">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -10,26 +11,24 @@
     </div>
     <div class="card-body">
       <div class="row">
-        <!-- Profile Image with Dropdown -->
-        <div class="col-md-3 text-center position-relative">
+        <!-- Profile Image with Buttons -->
+        <div class="col-md-3 text-center">
           <img src="{{ user.profile.image.url }}" alt="Profile Image" class="img-thumbnail mb-3">
-          <div class="dropdown position-absolute" style="top: 10px; right: 20px;">
-            <button class="dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false"></button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <li>
-                <form method="POST" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <label class="dropdown-item" for="profileImageInput" style="cursor: pointer;">Change Profile Picture</label>
-                  <input type="file" name="profile_picture" id="profileImageInput" accept="image/*" class="d-none" onchange="this.form.submit();">
-                </form>
-              </li>
-              <li>
-                <form method="POST" action="{% url 'delete_profile_picture' %}">
-                  {% csrf_token %}
-                  <button type="submit" class="dropdown-item text-danger">Delete Profile Picture</button>
-                </form>
-              </li>
-            </ul>            
+          <div class="d-flex justify-content-center gap-2 mb-3">
+            <form method="POST" enctype="multipart/form-data" class="d-inline">
+              {% csrf_token %}
+              <label for="profileImageInput" class="btn btn-sm btn-primary" style="cursor: pointer;">
+                Change Picture
+              </label>
+              <input type="file" name="profile_picture" id="profileImageInput" accept="image/*" class="d-none" onchange="this.form.submit();">
+            </form>
+            
+            <form method="POST" action="{% url 'delete_profile_picture' %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                Delete Picture
+              </button>
+            </form>
           </div>
         </div>
         <!-- Profile Details -->

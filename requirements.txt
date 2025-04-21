@@ -31,3 +31,5 @@ python-dotenv
 psycopg2-binary
 
 django-csp
+
+django-cleanup

@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bootstrap5',
     'storages',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
