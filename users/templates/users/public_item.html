@@ -18,6 +18,45 @@
         {% endif %}
       </div>
 
+      <!-- CD Status and Borrowing Section -->
+      <div class="card shadow mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Availability</h5>
+        </div>
+        <div class="card-body">
+          <h6>Status: 
+            {% if cd.status == 'available' %}
+              <span class="badge bg-success">Available</span>
+            {% elif cd.status == 'checked_out' %}
+              <span class="badge bg-danger">Checked Out</span>
+            {% elif cd.status == 'reserved' %}
+              <span class="badge bg-warning">Reserved</span>
+            {% endif %}
+          </h6>
+          
+          {% if cd.status == 'checked_out' and cd.checked_out_to %}
+            <p class="mb-2">Checked out to: <strong>{{ cd.checked_out_to.username }}</strong></p>
+            {% if cd.due_date %}
+              <p class="mb-3">Due date: <strong>{{ cd.due_date|date:"F j, Y" }}</strong></p>
+            {% endif %}
+          {% endif %}
+          
+          {% if not is_owner and cd.status == 'available' and is_public %}
+            {% if has_pending_request %}
+              <button class="btn btn-secondary w-100 mb-2" disabled>Request Pending</button>
+            {% else %}
+              <a href="{% url 'request_cd' cd.id %}" class="btn btn-primary w-100 mb-2">Request to Borrow</a>
+            {% endif %}
+          {% endif %}
+          
+          {% if is_owner and cd.status == 'checked_out' %}
+            <div class="alert alert-info" role="alert">
+              <small>This CD is currently checked out. It will become available again when returned.</small>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
       <div class="card shadow mb-4">
         <div class="card-header">
           <h5 class="mb-0">Collections</h5>
@@ -220,7 +259,6 @@
   }
   
   .dropdown-toggle:hover {
-    background-color: #7B3FE4;
     color: white;
   }
   

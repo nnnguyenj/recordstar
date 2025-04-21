@@ -36,13 +36,25 @@
                 <strong>Uploaded by:</strong> {{ cd.owner.username }}
               </small>
             </p>
+            <p class="card-text">
+              <small class="text-muted">
+                <strong>Status:</strong>
+                {% if cd.status == 'available' %}
+                  <span class="badge bg-success">Available</span>
+                {% elif cd.status == 'checked_out' %}
+                  <span class="badge bg-danger">Checked Out</span>
+                {% elif cd.status == 'reserved' %}
+                  <span class="badge bg-warning">Reserved</span>
+                {% endif %}
+              </small>
+            </p>
             {% if cd.collections.all %}
               <p class="card-text">
                 <small class="text-muted">
                   <strong>Collections:</strong><br>
                   {% for collection in cd.collections.all %}
                     {% if collection.is_public %}
-                      <a href="{% url 'collection_detail' collection.id %}">{{ collection.name }}</a>{% if not forloop.last %}, {% endif %}
+                      <button type="button" class="badge bg-primary p-2 border-0" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">{{ collection.name }}</button>{% if not forloop.last %} {% endif %}
                     {% endif %}
                   {% endfor %}
                 </small>

@@ -31,6 +31,12 @@ class FriendActivity(models.Model):
         return f"{self.user.username} added {self.friend.username}"
 
 class CD(models.Model):
+    STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('checked_out', 'Checked Out'),
+        ('reserved', 'Reserved'),
+    ]
+
     title = models.CharField(max_length=200)
     artist = models.CharField(max_length=100)
     release_year = models.IntegerField(null=True, blank=True)
@@ -41,6 +47,11 @@ class CD(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     unique_code = models.CharField(max_length=12, unique=True, editable=False, blank=True)
     
+    # fields for lending functionality
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
+    checked_out_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='borrowed_cds')
+    due_date = models.DateField(null=True, blank=True)
+
     # Rating fields
     user_rating = models.IntegerField(null=True, blank=True)
     review = models.TextField(blank=True)
@@ -52,6 +63,30 @@ class CD(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.artist}"
+    
+    def is_public(self):
+        if not self.collections.exists():
+            return True
+        return self.collections.filter(is_public=True).exists()
+
+class CDRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('returned', 'Returned'),
+    ]
+    
+    cd = models.ForeignKey(CD, on_delete=models.CASCADE, related_name='requests')
+    requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cd_requests')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    request_date = models.DateTimeField(auto_now_add=True)
+    requested_days = models.IntegerField(default=14)  # default loan period
+    response_date = models.DateTimeField(null=True, blank=True)
+    return_date = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.requester.username} requests {self.cd.title}"
     
 class Rating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

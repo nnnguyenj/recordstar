@@ -5,10 +5,11 @@ from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from .forms import RatingForm
-from .models import Collection, Library, CD, Rating, FriendActivity, Profile
+from .models import Collection, Library, CD, Rating, FriendActivity, Profile, CDRequest
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
+from django.utils import timezone
 
 
 def index_view(request):
@@ -441,6 +442,13 @@ def public_item_view(request, cd_id):
     is_owner = (cd.owner == request.user)
     is_librarian = (request.user.profile.account_type == 'L')
     can_add_to_collection = is_librarian or is_owner
+
+    has_pending_request = CDRequest.objects.filter(
+        cd=cd, 
+        requester=request.user, 
+        status='pending'
+    ).exists()
+    is_public = cd.is_public()
     
     return render(request, "users/public_item.html", {
         "cd": cd,
@@ -450,6 +458,8 @@ def public_item_view(request, cd_id):
         "is_librarian": is_librarian,
         "can_add_to_collection": can_add_to_collection,
         "avg_rating": avg_rating,
+        "has_pending_request": has_pending_request,
+        "is_public": is_public,
     })
 
 @login_required
@@ -569,4 +579,111 @@ def search_results(request):
         'results': results,
         'query': query,
     })
+
+# lending views
+
+@login_required
+def request_cd(request, cd_id):
+    cd = get_object_or_404(CD, id=cd_id)
+    
+    # Check if CD is available and public
+    if cd.status != 'available' or not cd.is_public():
+        messages.error(request, "This CD is not available for borrowing.")
+        return redirect('public_item', cd_id=cd.id)
+    
+    # Check if user already has a pending request for this CD
+    if CDRequest.objects.filter(cd=cd, requester=request.user, status='pending').exists():
+        messages.info(request, "You already have a pending request for this CD.")
+        return redirect('public_item', cd_id=cd.id)
+    
+    if request.method == 'POST':
+        requested_days = int(request.POST.get('requested_days', 7))
+        
+        # Create request
+        cd_request = CDRequest.objects.create(
+            cd=cd,
+            requester=request.user,
+            requested_days=requested_days
+        )
+        
+        messages.success(request, f"Request sent to {cd.owner.username} for '{cd.title}'")
+        return redirect('my_requests')
+    
+    return render(request, 'users/request_cd.html', {'cd': cd})
+
+@login_required
+def my_requests(request):
+    # Get requests made by the user
+    sent_requests = CDRequest.objects.filter(requester=request.user).order_by('-request_date')
+    
+    # Get requests for user's CDs
+    received_requests = CDRequest.objects.filter(cd__owner=request.user).order_by('-request_date')
+    
+    return render(request, 'users/my_requests.html', {
+        'sent_requests': sent_requests,
+        'received_requests': received_requests
+    })
+
+@login_required
+def respond_to_request(request, request_id):
+    cd_request = get_object_or_404(CDRequest, id=request_id, cd__owner=request.user)
+    
+    if request.method == 'POST':
+        response = request.POST.get('response')
+        
+        if response == 'approve':
+            cd_request.status = 'approved'
+            cd_request.response_date = timezone.now()
+            
+            # Update CD status
+            cd = cd_request.cd
+            cd.status = 'checked_out'
+            cd.checked_out_to = cd_request.requester
+            
+            # Calculate due date
+            due_date = timezone.now().date() + timezone.timedelta(days=cd_request.requested_days)
+            cd.due_date = due_date
+            
+            cd.save()
+            cd_request.save()
+            
+            messages.success(request, f"You've approved the request. '{cd.title}' is now checked out to {cd_request.requester.username}.")
+        
+        elif response == 'reject':
+            cd_request.status = 'rejected'
+            cd_request.response_date = timezone.now()
+            cd_request.save()
+            messages.info(request, "Request rejected.")
+        
+        return redirect('my_requests')
+    
+    return render(request, 'users/respond_to_request.html', {'cd_request': cd_request})
+
+@login_required
+def return_cd(request, request_id):
+    # Allow both the borrower and the owner to mark as returned
+    cd_request = get_object_or_404(
+        CDRequest, 
+        Q(requester=request.user) | Q(cd__owner=request.user),
+        id=request_id,
+        status='approved'
+    )
+    
+    if request.method == 'POST':
+        cd_request.status = 'returned'
+        cd_request.return_date = timezone.now()
+        
+        # Update CD status
+        cd = cd_request.cd
+        cd.status = 'available'
+        cd.checked_out_to = None
+        cd.due_date = None
+        
+        cd.save()
+        cd_request.save()
+        
+        messages.success(request, f"'{cd.title}' has been marked as returned.")
+        return redirect('my_requests')
+    
+    return render(request, 'users/return_cd.html', {'cd_request': cd_request})
 

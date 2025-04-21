@@ -98,7 +98,7 @@
                 Year: {{ item.cd.release_year }}<br>
                 {% if is_librarian and not item.is_owned %}Owner: {{ item.cd.owner.username }}<br>{% endif %}
                 {% if item.collection %}
-                  Collection: <a href="{% url 'collection_detail' item.collection.id %}">{{ item.collection.name }}</a>
+                  Collection: <button type="button" class="badge bg-primary p-2 border-0" onclick="window.location.href='{% url 'collection_detail' item.collection.id %}'">{{ item.collection.name }}</button>
                 {% else %}
                   <span class="text-muted">Not in a collection</span>
                 {% endif %}
