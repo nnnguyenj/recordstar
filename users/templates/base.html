@@ -150,10 +150,12 @@
           {% block content %}{% endblock %}
         </div>
 
-        <!-- Footer -->
-        <footer class="text-center mt-auto py-3 bg-light border-top">
-          <p class="mb-0 text-muted" style="font-size: 0.9rem;">&copy; 2025 RecordStar. All rights reserved.</p>
+        {% block footer %}
+        <!-- default footer if none is provided -->
+        <footer class="text-center mt-5 mb-3 text-muted">
+          This system is a class project. It is not monitored, and no real information should be submitted.
         </footer>
+        {% endblock %}
       </main>
     </div>
   </div>
