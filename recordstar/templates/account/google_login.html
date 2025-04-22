@@ -15,12 +15,11 @@
   <!-- Your custom CSS -->
   <link rel="stylesheet" href="{% static 'index.css' %}">
   <style>
-    /* Optional: Just for demo. Feel free to move these styles to index.css */
     .left-half {
-      background-color: #ffffff; /* White background */
+      background-color: #ffffff;
     }
     .right-half {
-      background-color: #f7f7f7; /* Light gray or your chosen color */
+      background-color: #f7f7f7;
     }
     .logo-title {
       font-size: 2rem;
@@ -29,7 +28,7 @@
     }
     .welcome-text {
       font-size: 1.25rem;
-      color: #6c757d; /* Bootstrap gray-600 */
+      color: #6c757d;
       margin-bottom: 2rem;
     }
     .custom-btn-google {
@@ -44,15 +43,28 @@
 <body>
   <div class="container-fluid">
     <div class="row vh-100">
-      <!-- Left side (Login form, branding) -->
+      <!-- Left side -->
       <div class="col-md-6 d-flex flex-column justify-content-center align-items-center left-half">
-        <!-- Branding / Logo -->
         <div class="text-center mb-4">
           <div class="logo-title">RecordStar</div>
         </div>
-
-        <!-- Welcome text -->
         <p class="welcome-text">Welcome back! Please enter your details.</p>
 
-        <!-- Login form (if using allauth’s username/password form) -->
         {% if user.is_authenticated %}
+          <!-- Redirect or logout option -->
+        {% endif %}
+      </div>
+
+      <!-- Right side -->
+      <div class="col-md-6 d-none d-md-block right-half">
+        <!-- Optional image or extra content -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center mt-5 mb-3 text-muted">
+    This system is a class project. It is not monitored, and no real information should be submitted.
+  </footer>
+</body>
+</html>
