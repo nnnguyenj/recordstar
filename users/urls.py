@@ -45,4 +45,6 @@ urlpatterns = [
     path('my-requests/', views.my_requests, name='my_requests'),
     path('respond-to-request/<int:request_id>/', views.respond_to_request, name='respond_to_request'),
     path('return-cd/<int:request_id>/', views.return_cd, name='return_cd'),
+    path('edit-profile-info/', views.edit_profile_info, name='edit_profile_info'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

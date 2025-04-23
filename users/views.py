@@ -96,6 +96,22 @@ def profile_view(request):
     return render(request, "users/profile.html")
 
 @login_required
+def edit_profile_info(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+
+        if username and email:
+            request.user.username = username
+            request.user.email = email
+            request.user.save()
+            messages.success(request, "Profile updated successfully.")
+        else:
+            messages.error(request, "Username and email are required.")
+
+    return redirect('profile')  # make sure 'profile' is a valid URL name
+
+@login_required
 def settings_view(request):
     return render(request, "users/settings.html")
 
