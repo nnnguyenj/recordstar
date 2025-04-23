@@ -13,7 +13,7 @@ urlpatterns = [
     path("", views.index_view, name="index"),
     path("logout", views.logout_view, name="logout"),
     path("dashboard/", dashboard_view, name="dashboard"),
-    path("dashboard/<int:cd_id>/", views.public_item_view, name="public_item"),
+    path("cd/<int:cd_id>/", views.public_item_view, name="public_item"),
     path('add-to-collection/<int:collection_id>/<int:cd_id>/', views.add_to_collection, name='add_to_collection'),
     path('rate-cd/<int:cd_id>/', views.rate_cd_public, name='rate_cd'),
     path("recent-activity/", views.recent_activity_view, name="recent_activity"),
@@ -46,5 +46,6 @@ urlpatterns = [
     path('respond-to-request/<int:request_id>/', views.respond_to_request, name='respond_to_request'),
     path('return-cd/<int:request_id>/', views.return_cd, name='return_cd'),
     path('edit-profile-info/', views.edit_profile_info, name='edit_profile_info'),
+    path("anon-user/", views.anon_user_view, name="anon_user"),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

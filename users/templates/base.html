@@ -70,7 +70,21 @@
     .sidebar h2.h4 {
       font-size: 20px !important; /* Make it same size as h4 */
       font-weight: bold !important; /* Keep h2 boldness */
+      margin-top: 0.1rem; /* tweak as needed */
+      margin-bottom: 0.1rem;
   }  
+
+  .sidebar h2.h4 > a.sidebar-link {
+    display: inline-block;
+    padding: 2px 0;
+    color: #333;
+    transition: color 0.2s ease;
+  }
+  
+  .sidebar h2.h4 > a.sidebar-link:hover {
+    color: #9F86C0 !important;
+  }
+  
     
   .search-container .fa-search {
     position: absolute;
@@ -110,13 +124,15 @@
               value="{{ request.GET.q }}">
           </form>
         </div>
-        <ul class="nav flex-column">
-          <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'dashboard' %}">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'recent_activity' %}">Recent Activity</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'my_requests' %}">My Requests</a></li>
-        </ul>
+        <h2 class="h4">
+          <a href="{% url 'dashboard' %}" class="sidebar-link text-decoration-none text-dark">Home</a>
+        </h2>
         
-        <h2 class="mt-4 h4">Catalog</h2>
+        <h2 class="h4">
+          <a href="{% url 'recent_activity' %}" class="sidebar-link text-decoration-none text-dark">Recent Activity</a>
+        </h2>        
+        
+        <h2 class="h4 mt-2">Catalog</h2>
         <ul class="nav flex-column">
           <li class="nav-item"><a class="nav-link" href="{% url 'library' %}">Library</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'collection' %}">Collections</a></li>
@@ -132,7 +148,11 @@
         <h2 class="mt-4 h4">User Settings</h2>
         <ul class="nav flex-column">
           <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'settings' %}">Settings</a></li>
+        </ul>
+
+        <h2 class="mt-4 h4">Request Center</h2>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="{% url 'my_requests' %}">My Requests</a></li>
         </ul>
       </nav>
 
@@ -150,7 +170,6 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
               <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
-              <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
               <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
             </ul>
           </div>

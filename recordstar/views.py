@@ -43,11 +43,10 @@ def search_cd_by_code(request):
             messages.error(request, "No CD found with that code.")
 
     return render(request, 'recordstar/search_cd.html')
-# recordstar/views.py
-from django.shortcuts import render
 
 def dashboard_view(request):
     return render(request, 'dashboard.html')
 
 def anon_user_welcome(request):
     return render(request, 'recordstar/anon_user_welcome.html')
+

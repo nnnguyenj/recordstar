@@ -37,6 +37,7 @@ def dashboard_view(request):
     ).distinct()
 
     context["public_cds"] = public_cds
+    context["is_anon"] = request.user.is_anonymous
 
     return render(request, "users/dashboard.html", context)
 
@@ -438,37 +439,40 @@ def edit_cd(request, cd_id):
     
     return render(request, "users/edit_cd.html", {"cd": cd})
 
-@login_required
+# had to take out the login required so anon users can see it 
 def public_item_view(request, cd_id):
     cd = get_object_or_404(CD, id=cd_id)
     user_rating = None
+    user_collections = None
+    is_owner = False
+    is_librarian = False
+    can_add_to_collection = False
+    has_pending_request = False
 
-    # calc average rating
+    # Calculate average rating
     ratings = cd.ratings.all()
-    avg_rating = 0
-    if ratings.exists():
-        total = sum(r.rating_value for r in ratings)
-        avg_rating = round(total / ratings.count(), 1)
+    avg_rating = round(sum(r.rating_value for r in ratings) / ratings.count(), 1) if ratings.exists() else 0
 
+    # If user is logged in, fetch personalized data
     if request.user.is_authenticated:
         try:
             user_rating = Rating.objects.get(user=request.user, cd=cd)
         except Rating.DoesNotExist:
             pass
-    
-    user_collections = Collection.objects.filter(owner=request.user)
-    
-    is_owner = (cd.owner == request.user)
-    is_librarian = (request.user.profile.account_type == 'L')
-    can_add_to_collection = is_librarian or is_owner
 
-    has_pending_request = CDRequest.objects.filter(
-        cd=cd, 
-        requester=request.user, 
-        status='pending'
-    ).exists()
+        user_collections = Collection.objects.filter(owner=request.user)
+        is_owner = cd.owner == request.user
+        is_librarian = request.user.profile.account_type == 'L'
+        can_add_to_collection = is_librarian or is_owner
+
+        has_pending_request = CDRequest.objects.filter(
+            cd=cd, 
+            requester=request.user, 
+            status='pending'
+        ).exists()
+
     is_public = cd.is_public()
-    
+
     return render(request, "users/public_item.html", {
         "cd": cd,
         "user_rating": user_rating,
@@ -706,3 +710,15 @@ def return_cd(request, request_id):
     
     return render(request, 'users/return_cd.html', {'cd_request': cd_request})
 
+
+def anon_user_view(request):
+    # Pull CDs not in a collection or in public collections
+    public_cds = CD.objects.filter(
+        Q(collections__isnull=True) | Q(collections__is_public=True)
+    ).distinct()
+
+    context = {
+        "public_cds": public_cds
+    }
+
+    return render(request, "recordstar/anon_user_welcome.html", context)
