@@ -256,22 +256,25 @@ def delete_collection_view(request, collection_id):
 
 @login_required
 def edit_collection(request, collection_id):
-    # allow librarians to edit any collection
     if request.user.profile.account_type == 'L':
         collection = get_object_or_404(Collection, id=collection_id)
     else:
         collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
-    
+
     if request.method == "POST":
         name = request.POST.get("name")
         if name:
             collection.name = name
+
+            # Only librarians can change is_public
+            if request.user.profile.account_type == 'L':
+                collection.is_public = request.POST.get("is_public") == "on"
+
             collection.save()
             return redirect("collection_detail", collection_id=collection.id)
-    
-    
-    # if not POST or form invalid, redirect back to collection detail
+
     return redirect("collection_detail", collection_id=collection.id)
+
 
 @login_required
 def toggle_collection_privacy(request, collection_id):

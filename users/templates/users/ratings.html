@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% load bootstrap5 %}
+
 {% block title %}Ratings{% endblock %}
 {% block content %}
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold" style="color: #560BAD;">Your Ratings</h2>
-    <a href="#ratingForm" class="btn create-btn">Add a New Rating</a>
+    <a class="btn create-btn mb-4" data-bs-toggle="collapse" href="#ratingForm" role="button" aria-expanded="false" aria-controls="ratingForm">
+      Add a New Rating
+    </a>    
   </div>
 
   {% if ratings %}
@@ -50,57 +53,64 @@
     {% endfor %}
   </div>
   {% else %}
-  <div class="alert alert-light text-center py-4">
+  {% if not ratings %}
+  <div id="emptyRatingsAlert" class="alert alert-light text-center py-4">
     <i class="bi bi-star" style="font-size: 2rem; color: #ccc;"></i>
     <p class="mt-3 mb-0">You haven't rated any CDs yet.</p>
   </div>
-  {% endif %}
+{% endif %}
 
-  <div id="ratingForm" class="row justify-content-center mt-5">
-    <div class="col-md-8">
-      <div class="card shadow-sm">
-        <div class="card-header" style="background: linear-gradient(135deg, #7B3FE4, #560BAD); color: white;">
-          <h4 class="mb-0">Add a New Rating</h4>
-        </div>
-        <div class="card-body p-4">
-          <form method="POST">
-            {% csrf_token %}
-            
-            <div class="mb-3">
+
+  <div class="collapse mb-4" id="ratingForm">
+    <div class="card">
+      <div class="card-header">Add a New Rating</div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="row g-3">
+            <!-- CD Dropdown -->
+            <div class="col-md-6">
               <label for="{{ form.cd.id_for_label }}" class="form-label">CD</label>
-              {% bootstrap_field form.cd show_label=False %}
+              <select name="{{ form.cd.html_name }}" id="{{ form.cd.id_for_label }}" class="form-select" required>
+                {% for choice in form.cd.field.choices %}
+                  <option value="{{ choice.0 }}" {% if choice.0 == form.cd.value %}selected{% endif %}>{{ choice.1 }}</option>
+                {% endfor %}
+              </select>
             </div>
-            
-            <div class="mb-3">
-              <label for="{{ form.rating_value.id_for_label }}" class="form-label">Rating (1-10)</label>
+  
+            <!-- Rating Input -->
+            <div class="col-md-6">
+              <label for="{{ form.rating_value.id_for_label }}" class="form-label">Rating (1–10)</label>
               <input 
                 type="number" 
-                class="form-control" 
-                id="{{ form.rating_value.id_for_label }}" 
-                name="{{ form.rating_value.html_name }}" 
-                min="1" 
-                max="10" 
+                name="{{ form.rating_value.html_name }}"
+                id="{{ form.rating_value.id_for_label }}"
+                min="1" max="10"
                 value="{% if form.rating_value.value %}{{ form.rating_value.value }}{% else %}8{% endif %}"
+                class="form-control"
                 required
               >
-              <div class="form-text">Please enter a number between 1 and 10</div>
             </div>
-            
-            <div class="mb-3">
+  
+            <!-- Review -->
+            <div class="col-12">
               <label for="{{ form.review.id_for_label }}" class="form-label">Review (Optional)</label>
-              {% bootstrap_field form.review show_label=False %}
+              <textarea 
+                name="{{ form.review.html_name }}" 
+                id="{{ form.review.id_for_label }}" 
+                class="form-control" 
+                rows="3"
+              >{% if form.review.value %}{{ form.review.value }}{% endif %}</textarea>
             </div>
-            
-            <div class="text-end">
-              <button type="submit" class="btn create-btn px-4">Submit Rating</button>
-            </div>
-          </form>
-        </div>
+          </div>
+  
+          <button type="submit" class="btn btn-success mt-3">Submit Rating</button>
+        </form>
       </div>
     </div>
   </div>
-</div>
-
+  
+  
 <!-- Delete Rating Modal -->
 <div class="modal fade" id="deleteRatingModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -212,4 +222,20 @@
     });
   });
 </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const formCollapse = document.getElementById('ratingForm');
+    const emptyAlert = document.getElementById('emptyRatingsAlert');
+
+    if (formCollapse && emptyAlert) {
+      formCollapse.addEventListener('show.bs.collapse', () => {
+        emptyAlert.style.display = 'none';
+      });
+      formCollapse.addEventListener('hide.bs.collapse', () => {
+        emptyAlert.style.display = 'block';
+      });
+    }
+  });
+</script>
+{% endif %}
 {% endblock %}

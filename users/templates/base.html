@@ -85,7 +85,12 @@
     background-color: #f0f0f0;
     border: 1px solid #ccc;
     border-radius: 4px;
-  }
+  
+    /* Add these ↓ */
+    height: 30px;           /* Controls input height */
+    font-size: 14px;        /* Shrinks the text to fit the smaller box */
+    line-height: 1.2;       /* Keeps text vertically aligned */
+  }  
   
   </style>
   {% block extra_css %}{% endblock %}
@@ -95,7 +100,9 @@
     <div class="row">
       <!-- Sidebar -->
       <nav class="col-md-3 col-lg-2 sidebar">
-        <h2>Search</h2>
+        <a href="{% url 'dashboard' %}">
+          <img src="{% static 'images/rs logo design.png' %}" alt="RecordStar" class="recordstar-logo mb-3" style="height: 35px;">
+        </a>        
         <div class="search-container">
           <form action="{% url 'search_results' %}" method="GET">
             <i class="fa fa-search"></i>
@@ -104,7 +111,7 @@
           </form>
         </div>
         <ul class="nav flex-column">
-          <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Home</a></li>
+          <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'dashboard' %}">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'recent_activity' %}">Recent Activity</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'my_requests' %}">My Requests</a></li>
         </ul>
@@ -132,8 +139,12 @@
       <!-- Main Content -->
       <main class="col-md-9 col-lg-10 d-flex flex-column" style="background-color: #fcfcfc;">
         <!-- Top-right user info -->
-        <div class="d-flex justify-content-end p-3">
-          <div class="dropdown">
+        <div class="d-flex justify-content-end align-items-center p-3">
+          <div class="dropdown d-flex align-items-center">
+            <!-- User Profile Image -->
+            <img src="{{ user.profile.image.url }}" alt="Profile Image" class="rounded-circle me-2" style="width: 36px; height: 36px; object-fit: cover;">
+      
+            <!-- Username Dropdown -->
             <a class="dropdown-toggle text-decoration-none" style="color: #973AA8;" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
               {{ user.username }}
             </a>
@@ -143,7 +154,7 @@
               <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
             </ul>
           </div>
-        </div>
+        </div>      
 
         <!-- Central content area -->
         <div class="flex-fill p-3">

@@ -60,33 +60,34 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
       {% for item in cd_info %}
       <div class="col">
-        <div class="card h-100 position-relative">
-          {% if item.cd.cover_image %}
-            <img src="{{ item.cd.cover_image.url }}" class="card-img-top" alt="Cover image" style="height: 200px; object-fit: cover;">
-          {% else %}
-            <div class="bg-light text-center p-5">No Cover Image</div>
-          {% endif %}
-
-          <!-- Dropdown in top right corner styled like profile.html -->
-          <div class="dropdown position-absolute" style="top: 10px; right: 10px;">
-            <button class="dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButton{{ item.cd.id }}" data-bs-toggle="dropdown" aria-expanded="false"></button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ item.cd.id }}">
-              <li><a class="dropdown-item" href="{% url 'edit_cd' item.cd.id %}">Edit</a></li>
-              <li>
-                <form method="post" action="{% url 'delete_cd' item.cd.id %}" onsubmit="return confirm('Are you sure you want to delete this CD?');">
-                  {% csrf_token %}
-                  <button type="submit" class="dropdown-item text-danger">Delete</button>
-                </form>
-              </li>
-              <li>
-                <a class="dropdown-item" data-bs-toggle="collapse" href="#addToCollectionForm{{ item.cd.id }}" role="button" aria-expanded="false" aria-controls="addToCollectionForm{{ item.cd.id }}">
-                  Add to Current Collection
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#newCollectionModal{{ item.cd.id }}">Add to New Collection</a>
-              </li>
-            </ul>
+        <div class="card h-100 position-relative" style="transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); z-index: 1;">
+          <div class="position-relative" style="z-index: 0;">
+            <a href="{% url 'public_item' item.cd.id %}" class="stretched-link"></a>
+            {% if item.cd.cover_image %}
+              <img src="{{ item.cd.cover_image.url }}" class="card-img-top" alt="Cover image" style="height: 200px; object-fit: cover;">
+            {% else %}
+              <div class="bg-light text-center p-5">No Cover Image</div>
+            {% endif %}
+            <div class="dropdown position-absolute" style="top: 10px; right: 10px; z-index: 1070;">
+              <button class="dropdown-toggle" style="border: none; background: transparent; z-index: 1071; position: relative;" type="button" id="dropdownMenuButton{{ item.cd.id }}" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation();"></button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ item.cd.id }}">
+                <li><a class="dropdown-item" href="{% url 'edit_cd' item.cd.id %}">Edit</a></li>
+                <li>
+                  <form method="post" action="{% url 'delete_cd' item.cd.id %}" onsubmit="return confirm('Are you sure you want to delete this CD?');">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item text-danger">Delete</button>
+                  </form>
+                </li>
+                <li>
+                  <a class="dropdown-item" data-bs-toggle="collapse" href="#addToCollectionForm{{ item.cd.id }}" role="button" aria-expanded="false" aria-controls="addToCollectionForm{{ item.cd.id }}">
+                    Add to Current Collection
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#newCollectionModal{{ item.cd.id }}">Add to New Collection</a>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div class="card-body">
@@ -98,7 +99,7 @@
                 Year: {{ item.cd.release_year }}<br>
                 {% if is_librarian and not item.is_owned %}Owner: {{ item.cd.owner.username }}<br>{% endif %}
                 {% if item.collection %}
-                  Collection: <button type="button" class="badge bg-primary p-2 border-0" onclick="window.location.href='{% url 'collection_detail' item.collection.id %}'">{{ item.collection.name }}</button>
+                  Collection: <span class="badge bg-primary p-2">{{ item.collection.name }}</span>
                 {% else %}
                   <span class="text-muted">Not in a collection</span>
                 {% endif %}
