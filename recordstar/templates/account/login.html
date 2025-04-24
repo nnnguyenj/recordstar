@@ -174,12 +174,12 @@
   {% else %}
   <div class="container-fluid vh-100">
     <div class="row h-100">
-      <div class="col-md-6 position-relative d-flex p-5">
+      <div class="col-md-6 position-relative d-flex align-items-start justify-content-center" style="padding-top: 100px; min-height: 100vh;">
         <a href="{% url 'account_login' %}" class="position-absolute top-0 start-0 m-4" style="z-index: 0;">
           <img src="{% static 'images/rs logo design.png' %}" alt="Logo" style="height: 37px;">
         </a>
 
-        <div class="ms-auto mt-5 form-container">
+        <div class="ms-auto mt-5 form-container" >
           <h2 class="mb-2 fw-bold text-center">Welcome Back!</h2>
           <p class="text-muted text-center mb-4">Please enter your login details.</p>
 
@@ -192,29 +192,9 @@
             <span style="background: #fff; position: relative; z-index: 1; padding: 0 0.75rem;">or</span>
             <hr style="position: absolute; top: 50%; left: 0; right: 0; z-index: 0; border-top: 1px solid #dee2e6;">
           </div>
+          
+          <a href="{% url 'anon_user_welcome' %}" class="btn signin-btn w-100 mb-3">Browse as a Guest</a>
 
-          <form method="post" action="{% url 'account_login' %}">
-            {% csrf_token %}
-            <div class="mb-3">
-              <label for="id_username" class="form-label">Username</label>
-              <input type="text" name="login" class="form-control border-0 border-bottom rounded-0 px-0" id="id_username" placeholder="Enter your username" required>
-            </div>
-            <div class="mb-3">
-              <label for="id_password" class="form-label">Password</label>
-              <input type="password" name="password" class="form-control border-0 border-bottom rounded-0 px-0" id="id_password" placeholder="Enter your password" required>
-            </div>
-            <div class="d-flex justify-content-end mb-3">
-              <a href="{% url 'account_reset_password' %}" class="link-hover text-muted" style="font-size: 0.85rem;">Forgot your password?</a>
-            </div>
-            <button type="submit" class="btn signin-btn w-100 mb-3">Sign In</button>
-          </form>
-
-          <div class="text-center" style="font-size: 0.7rem; line-height: 1;">
-            <span>New to RecordStar?</span>
-            <a href="{% url 'account_signup' %}" class="create-link ms-1">Create an account</a>
-            <span class="mx-1">or</span>
-            <a href="{% url 'anon_user_welcome' %}" class="create-link">Browse as a Guest</a>
-          </div>
         </div>
       </div>
 

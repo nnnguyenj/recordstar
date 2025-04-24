@@ -46,33 +46,25 @@ class CustomAccountAdapter(DefaultAccountAdapter):
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
-    def get_login_redirect_url(self, request):
-        user = request.user
-        if user.is_authenticated:
-            # Check if this is a new social account
-            is_new_account = getattr(user, 'socialaccount_newly_created', False)
-            
-            # If not a new account, redirect straight to dashboard
-            if not is_new_account:
-                print("[CustomSocialAccountAdapter] 👋 Existing user - straight to dashboard")
-                return "/dashboard/"
-                
-            # Otherwise, handle new accounts
-            try:
-                profile = user.profile
-                if profile.image and not profile.image.name.endswith("default.jpg"):
-                    print("[CustomSocialAccountAdapter] ✅ Redirecting to dashboard")
-                    return "/dashboard/"
-                else:
-                    print("[CustomSocialAccountAdapter] 🖼️ Needs profile picture")
-                    return "/recordstar/first_time_setup/"
-            except Profile.DoesNotExist:
-                print("[CustomSocialAccountAdapter] ❌ No profile found")
-                return "/recordstar/first_time_setup/"
-        return super().get_login_redirect_url(request)
-    
-    # Override to set a flag when a new social account is created
     def save_user(self, request, sociallogin, form=None):
         user = super().save_user(request, sociallogin, form)
         request.session['social_account_newly_created'] = True
         return user
+
+    def get_login_redirect_url(self, request):
+        user = request.user
+        if user.is_authenticated:
+            is_new = request.session.pop('social_account_newly_created', False)
+
+            if is_new:
+                try:
+                    profile = user.profile
+                    if profile.image and not profile.image.name.endswith("default.jpg"):
+                        return "/dashboard/"
+                    else:
+                        return "/recordstar/first_time_setup/"
+                except Profile.DoesNotExist:
+                    return "/recordstar/first_time_setup/"
+
+            return "/dashboard/"
+        return super().get_login_redirect_url(request)
