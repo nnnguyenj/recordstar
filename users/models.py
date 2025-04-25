@@ -18,6 +18,7 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
     is_collection_public = models.BooleanField(default=True)
+    birthday = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} ({self.get_account_type_display()})"

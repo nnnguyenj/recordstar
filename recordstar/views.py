@@ -17,13 +17,28 @@ class IndexView(generic.TemplateView):
 
 @login_required
 def first_time_setup(request):
-    if request.method == 'POST' and 'profile_picture' in request.FILES:
-        profile = Profile.objects.get(user=request.user)
-        profile.image = request.FILES['profile_picture']
+    if request.method == 'POST':
+        user = request.user
+        profile = user.profile
+
+        # Save form fields
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.username = request.POST.get('username', user.username)
+        birthday = request.POST.get('birthday')
+
+        if birthday:
+            profile.birthday = birthday  # You'll need to add this field to the Profile model if it doesn't exist
+
+        # Save profile picture
+        if 'profile_picture' in request.FILES:
+            profile.image = request.FILES['profile_picture']
+
+        user.save()
         profile.save()
 
-        # Re-authenticate the user
-        user = authenticate(request, username=request.user.username)
+        # Re-authenticate to refresh session if username changed
+        user = authenticate(request, username=user.username)
         if user:
             login(request, user)
 

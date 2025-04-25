@@ -54,6 +54,7 @@ body {
     }
     .signin-btn:hover {
       background-color: #7B3FE4;
+      color: white;
       transform: scale(1.03);
     }
 
@@ -150,12 +151,25 @@ body {
       background: none;
       border: none;
       cursor: pointer;
+      display: none;
     }
 
     .logo {
       position: absolute;
       top: 20px;
       left: 30px;
+    }
+    .skip-button, .continue-button {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #7B3FE4;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: none;
     }
   </style>
 </head>
@@ -172,6 +186,8 @@ body {
   </div>
 
   <div class="wrapper">
+    <a href="{% url 'dashboard' %}" id="continue-dashboard-btn" class="continue-button" style="display: none;">Continue to Dashboard</a>
+
     <div id="slider" class="slider-container">
 
       <!-- Step 1: Welcome Message -->
@@ -187,8 +203,8 @@ body {
       <!-- Step 2: Basic Info -->
     <div class="container text-center" style="margin-top: 100px; padding-top: 30px;">
       <div class="form-container mx-auto">
-      <h2 class="mb-3 fw-bold">Create your Profile!</h2>
-      <form method="post" action="{% url 'first_time_setup' %}">
+      <h2 class="mb-3 fw-bold" style="color: #560BAD;">Create your Profile!</h2>
+      <form id="setup-form" method="post" onsubmit="return handleSetupSubmit(event)">
         {% csrf_token %}
         <div class="mb-3 text-start">
           <label for="first_name" class="form-label">First Name</label>
@@ -206,7 +222,7 @@ body {
           <label for="birthday" class="form-label">Birthday</label>
           <input type="date" name="birthday" id="birthday" class="form-control" required>
         </div>
-        <button type="submit" class="btn signin-btn w-100">Continue</button>
+        <button type="submit" class="btn signin-btn w-100">Save</button>
       </form>
     </div>
   </div>
@@ -227,9 +243,9 @@ body {
           <label for="file-upload" class="btn" style="background-color: #fff; border: 1px solid #ccc; font-weight: 600; padding: 0.6rem 1rem; color: #000; border-radius: 6px; cursor: pointer;">
             Choose File
           </label>
-          <button type="submit" class="btn" style="background-color: #560BAD; color: white; padding: 0.6rem 1.5rem; font-weight: 600; border-radius: 6px;">
-            Upload & Finish
-          </button>
+          <button type="button" class="btn" onclick="handleUpload()" style="background-color: #560BAD; color: white; padding: 0.6rem 1.5rem; font-weight: 600; border-radius: 6px;">
+            Upload
+          </button>          
         </form>
       </div>
     </div>
@@ -242,6 +258,79 @@ body {
   </div>
 
   <script>
+
+    async function handleSetupSubmit(event) {
+      event.preventDefault();
+
+      const form = document.getElementById('setup-form');
+      const formData = new FormData(form);
+
+      const response = await fetch("{% url 'first_time_setup' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        document.getElementById('continue-dashboard-btn').style.display = 'block';
+        console.log("Saved full profile");
+      } else {
+        alert("Failed to save your profile.");
+      }
+    }
+
+    let profilePicUploaded = false;
+
+    async function handleUpload() {
+      const fileInput = document.getElementById('file-upload');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please choose a file first.");
+        return;
+      }
+  
+      const data = new FormData();
+      data.append('profile_picture', file);
+  
+      const response = await fetch("{% url 'first_time_setup' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: data,
+      });
+  
+      if (response.ok) {
+        console.log("Profile picture uploaded");
+        profilePicUploaded = true;
+        checkFieldsForContinue();  // call your existing function
+      } else {
+        alert("Failed to upload profile picture.");
+      }
+    }
+  
+    function checkFieldsForContinue() {
+      const fields = ['first_name', 'last_name', 'username', 'birthday'];
+      const allFilled = fields.every(id => {
+        const el = document.getElementById(id);
+        return el && el.value.trim() !== '';
+      });
+    
+      const continueBtn = document.getElementById('continue-dashboard-btn');
+      if (allFilled && profilePicUploaded) {
+        continueBtn.style.display = 'block';
+      } else {
+        continueBtn.style.display = 'none';
+        continueBtn.onclick = null;  // safety: remove redirect if conditions aren't met
+      }
+    }    
+  
+    document.querySelectorAll('#first_name, #last_name, #username, #birthday').forEach(input => {
+      input.addEventListener('input', checkFieldsForContinue);
+    });
+
     let currentSlide = 0;
     const totalSlides = 3;
     const slider = document.getElementById('slider');
@@ -258,7 +347,11 @@ body {
       rightArrow.style.display = currentSlide === totalSlides - 1 ? 'none' : 'flex';
     }
 
-    document.addEventListener('DOMContentLoaded', () => goToSlide(0));
+    document.addEventListener('DOMContentLoaded', () => {
+      goToSlide(0);
+      checkFieldsForContinue();
+    });
+
     document.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
       else if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
