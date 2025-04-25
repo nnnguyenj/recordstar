@@ -8,9 +8,11 @@
 <div class="container mt-4">
   <h2>Search Results for "{{ query }}"</h2>
 
-  {% if results %}
+  <!-- CD Results -->
+  <h4 class="mt-4">CDs</h4>
+  {% if cd_results %}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      {% for cd in results %}
+      {% for cd in cd_results %}
       <div class="col">
         <div class="card">
           {% if cd.cover_image %}
@@ -23,10 +25,7 @@
             <h5 class="card-title">{{ cd.title }}</h5>
             <h6 class="card-subtitle mb-2 text-muted">{{ cd.artist }}</h6>
             <p class="card-text">
-              <small class="text-muted">
-                Genre: {{ cd.genre }}<br>
-                Year: {{ cd.release_year }}
-              </small>
+              <small class="text-muted">Unique Code: {{ cd.unique_code }}</small>
             </p>
             <a href="{% url 'public_item' cd.id %}" class="btn btn-primary">View Details</a>
           </div>
@@ -36,6 +35,24 @@
     </div>
   {% else %}
     <p>No CDs found matching your query.</p>
+  {% endif %}
+
+  <!-- Collection Results -->
+  <h4 class="mt-5">Collections</h4>
+  {% if collection_results %}
+    <ul class="list-group">
+      {% for collection in collection_results %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ collection.name }}</strong>
+          <small class="text-muted">({{ collection.owner.username }})</small>
+        </div>
+        <a href="{% url 'collection_detail' collection.id %}" class="btn btn-outline-primary btn-sm">View Collection</a>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No collections found matching your query.</p>
   {% endif %}
 </div>
 {% endblock %}

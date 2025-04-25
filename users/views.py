@@ -591,18 +591,38 @@ def delete_profile_picture(request):
 
 
 def search_results(request):
-    query = request.GET.get('q')
-    results = CD.objects.filter(
-        Q(title__icontains=query) |
-        Q(artist__icontains=query) |
-        Q(unique_code__icontains=query)
-    ) if query else []
+    query = request.GET.get('q', '').strip()
+    user = request.user
+
+    cd_results = []
+    collection_results = []
+
+    if query:
+        # Search CDs: title, artist, unique code
+        cd_results = CD.objects.filter(
+            Q(title__icontains=query) |
+            Q(artist__icontains=query) |
+            Q(unique_code__icontains=query)
+        ).distinct()
+
+        # Filter CDs by public access or owned by user
+        cd_results = cd_results.filter(
+            Q(collections__isnull=True) |
+            Q(collections__is_public=True) |
+            Q(owner=user)
+        ).distinct()
+
+        # Search Collections by name
+        collection_results = Collection.objects.filter(
+            Q(name__icontains=query),
+            Q(is_public=True) | Q(owner=user)
+        ).distinct()
 
     return render(request, 'users/search_results.html', {
-        'results': results,
         'query': query,
+        'cd_results': cd_results,
+        'collection_results': collection_results,
     })
-
 # lending views
 
 @login_required
