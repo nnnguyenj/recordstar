@@ -32,10 +32,18 @@
       </p>
       </div>
 
+  <form method="GET" class="mb-4">
+    <div class="input-group">
+      <input type="text" name="q" class="form-control" placeholder="Search CDs in this collection..." value="{{ query }}">
+      <button class="btn btn-outline-secondary" type="submit">Search</button>
+    </div>
+  </form>
+
+
   <h4 class="mt-4">CDs in This Collection</h4>
-  {% if collection.cds.all %}
+    {% if cds %}
     <ul class="list-group mb-4">
-      {% for cd in collection.cds.all %}
+      {% for cd in cds %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <div>
             <strong>{{ cd.title }}</strong> by {{ cd.artist }}<br>
@@ -53,10 +61,11 @@
         </li>
       {% endfor %}
     </ul>
+  {% elif request.GET.q %}
+    <p class="text-muted">No CDs matched your search.</p>
   {% else %}
     <p class="text-muted">No CDs in this collection yet.</p>
   {% endif %}
-
 
 {% if user == collection.owner or user.profile.account_type == 'L' %}
     <hr>

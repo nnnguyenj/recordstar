@@ -210,37 +210,43 @@ def add_collection_view(request):
 
 @login_required
 def collection_detail_view(request, collection_id):
-    if request.user.profile.account_type == 'L':
-        collection = get_object_or_404(Collection, id=collection_id)
-    else:
-        collection = get_object_or_404(Collection, id=collection_id)
-        if not collection.is_public and collection.owner != request.user:
-            return render(request, "users/collection_detail_limited.html", {
-                "collection": collection
-            })
+    collection = get_object_or_404(Collection, id=collection_id)
 
-    if request.user.profile.account_type == 'L':
+    if not collection.is_public and request.user != collection.owner and request.user.profile.account_type != 'L':
+        return render(request, "users/collection_detail_limited.html", {"collection": collection})
+
+    is_librarian = request.user.profile.account_type == 'L'
+    if is_librarian:
         available_cds = CD.objects.exclude(id__in=collection.cds.values_list('id', flat=True))
     else:
         available_cds = CD.objects.filter(owner=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
 
     if request.method == "POST":
-        # only add from library to collection
         cd_id = request.POST.get("cd_id")
         if cd_id:
-            if request.user.profile.account_type == 'L':
-                cd = get_object_or_404(CD, id=cd_id)
-            else:
-                cd = get_object_or_404(CD, id=cd_id, owner=request.user)
-                
+            cd = get_object_or_404(CD, id=cd_id)
             collection.cds.add(cd)
             return redirect("collection_detail", collection_id=collection.id)
-        
+
+    query = request.GET.get("q", "").strip()
+    cds = collection.cds.all()
+    if query:
+        cds = cds.filter(
+            Q(title__icontains=query) |
+            Q(artist__icontains=query) |
+            Q(unique_code__icontains=query) |
+            Q(genre__icontains=query) |
+            Q(release_year__icontains=query)
+        )
+
     return render(request, "users/collection_detail.html", {
         "collection": collection,
         "available_cds": available_cds,
-        "is_librarian": request.user.profile.account_type == 'L',
+        "is_librarian": is_librarian,
+        "cds": cds,
+        "query": query,
     })
+
 
 
 
@@ -591,18 +597,37 @@ def delete_profile_picture(request):
 
 
 def search_results(request):
-    query = request.GET.get('q')
-    results = CD.objects.filter(
-        Q(title__icontains=query) |
-        Q(artist__icontains=query) |
-        Q(unique_code__icontains=query)
-    ) if query else []
+    query = request.GET.get('q', '').strip()
+    user = request.user
+
+    cd_results = []
+    collection_results = []
+
+    if query:
+        cd_results = CD.objects.filter(
+            Q(title__icontains=query) |
+            Q(artist__icontains=query) |
+            Q(unique_code__icontains=query) |
+            Q(genre__icontains=query) |
+            Q(release_year__icontains=query)
+        ).distinct()
+
+        cd_results = cd_results.filter(
+            Q(collections__isnull=True) |
+            Q(collections__is_public=True) |
+            Q(owner=user)
+        ).distinct()
+
+        collection_results = Collection.objects.filter(
+            Q(name__icontains=query),
+            Q(is_public=True) | Q(owner=user)
+        ).distinct()
 
     return render(request, 'users/search_results.html', {
-        'results': results,
         'query': query,
+        'cd_results': cd_results,
+        'collection_results': collection_results,
     })
-
 # lending views
 
 @login_required

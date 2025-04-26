@@ -12,7 +12,6 @@ urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
     path('dashboard/', dashboard_view, name='dashboard'),
     path("first_time_setup/", views.first_time_setup, name='first_time_setup'),
-    path("search_cd/", views.search_cd_by_code, name="search_cd"),
     path('anon-user/', anon_user_welcome, name='anon_user_welcome'),
     path("", include("users.urls")),
     

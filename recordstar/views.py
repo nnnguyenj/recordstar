@@ -46,19 +46,6 @@ def first_time_setup(request):
 
     return render(request, "recordstar/first_time_setup.html")
 
-
-@login_required
-def search_cd_by_code(request):
-    if request.method == 'POST':
-        code = request.POST.get('unique_code').strip().upper()
-        try:
-            cd = CD.objects.get(unique_code=code, owner=request.user)
-            return render(request, 'recordstar/cd_detail.html', {'cd': cd})
-        except CD.DoesNotExist:
-            messages.error(request, "No CD found with that code.")
-
-    return render(request, 'recordstar/search_cd.html')
-
 def dashboard_view(request):
     return render(request, 'dashboard.html')
 
