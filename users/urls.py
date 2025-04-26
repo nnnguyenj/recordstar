@@ -47,5 +47,7 @@ urlpatterns = [
     path('return-cd/<int:request_id>/', views.return_cd, name='return_cd'),
     path('edit-profile-info/', views.edit_profile_info, name='edit_profile_info'),
     path("anon-user/", views.anon_user_view, name="anon_user"),
+    path('collection/<int:collection_id>/request-access/', views.request_access, name='request_access'),
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

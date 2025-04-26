@@ -5,7 +5,7 @@ from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from .forms import RatingForm
-from .models import Collection, Library, CD, Rating, FriendActivity, Profile, CDRequest
+from .models import Collection, Library, CD, Rating, FriendActivity, Profile, CDRequest, CDRequestAccess
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
@@ -212,8 +212,23 @@ def add_collection_view(request):
 def collection_detail_view(request, collection_id):
     collection = get_object_or_404(Collection, id=collection_id)
 
-    if not collection.is_public and request.user != collection.owner and request.user.profile.account_type != 'L':
-        return render(request, "users/collection_detail_limited.html", {"collection": collection})
+    has_access = (
+            collection.is_public or
+            request.user == collection.owner or
+            request.user.profile.account_type == 'L' or
+            CDRequestAccess.objects.filter(
+                requester=request.user,
+                collection=collection,
+                approved=True
+            ).exists()
+    )
+
+    if not has_access:
+        has_requested = CDRequestAccess.objects.filter(requester=request.user, collection=collection).exists()
+        return render(request, "users/collection_detail_limited.html", {
+            "collection": collection,
+            "has_requested": has_requested,
+        })
 
     is_librarian = request.user.profile.account_type == 'L'
     if is_librarian:
@@ -747,3 +762,19 @@ def anon_user_view(request):
     }
 
     return render(request, "recordstar/anon_user_welcome.html", context)
+
+# views.py
+@login_required
+def request_access(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+
+    # Disallow access requests for public collections or for owners
+    if collection.is_public or collection.owner == request.user:
+        return redirect('collection_detail', collection_id=collection.id)
+
+    CDRequestAccess.objects.get_or_create(
+        requester=request.user,
+        collection=collection
+    )
+
+    return redirect('collection_detail', collection_id=collection.id)

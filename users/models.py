@@ -114,3 +114,12 @@ class Library(models.Model):
     
     def __str__(self):
         return f"{self.user.username}'s Library"
+
+class CDRequestAccess(models.Model):
+    requester = models.ForeignKey(User, on_delete=models.CASCADE)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    approved = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('requester', 'collection')
