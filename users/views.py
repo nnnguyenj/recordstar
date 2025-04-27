@@ -418,6 +418,9 @@ def add_cd_to_library(request):
 
 @login_required
 def delete_cd(request, cd_id):
+    profile = request.user.profile
+    if not profile.is_librarian:
+        return redirect('library')
     cd = get_object_or_404(CD, id=cd_id, owner=request.user)
     if request.method == "POST":
         cd.delete()
@@ -425,6 +428,10 @@ def delete_cd(request, cd_id):
 
 @login_required
 def edit_cd(request, cd_id):
+    profile = request.user.profile
+    if not profile.is_librarian:
+        return redirect('library')
+
     cd = get_object_or_404(CD, id=cd_id, owner=request.user)
     
     if request.method == "POST":
