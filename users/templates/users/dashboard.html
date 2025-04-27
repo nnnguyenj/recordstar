@@ -6,7 +6,12 @@
 <div class="container">
   <!-- Welcome Section -->
   <div class="text-center mb-4">
-    <h1>Welcome, {{ user.username }}!</h1>
+    {% if user.is_authenticated %}
+  <h1>Welcome, {{ user.username }}!</h1>
+{% else %}
+  <h1>Welcome, Guest!</h1>
+  <p>You're browsing public CDs. Create an account to save favorites!</p>
+{% endif %}
   </div>
 
   <h3 class="text-center mb-4">Browse Public Items</h3>

@@ -186,7 +186,7 @@ body {
   </div>
 
   <div class="wrapper">
-    <a href="{% url 'dashboard' %}" id="continue-dashboard-btn" class="continue-button" style="display: none;">Continue to Dashboard</a>
+    <button id="continue-dashboard-btn" type="button" class="continue-button" onclick="redirectToDashboard()" style="display: none;">Continue to Dashboard</button>
 
     <div id="slider" class="slider-container">
 
@@ -270,10 +270,14 @@ body {
         headers: {
           'X-CSRFToken': '{{ csrf_token }}'
         },
-        body: formData
+        body: formData,
+        redirect: 'follow'
+
       });
 
-      if (response.ok) {
+      if (response.redirected) {
+        window.location.href = response.url;
+      } else if (response.ok) {
         document.getElementById('continue-dashboard-btn').style.display = 'block';
         console.log("Saved full profile");
       } else {
@@ -321,6 +325,8 @@ body {
       const continueBtn = document.getElementById('continue-dashboard-btn');
       if (allFilled && profilePicUploaded) {
         continueBtn.style.display = 'block';
+        continueBtn.onclick = redirectToDashboard; // <-- assign the redirect function here
+
       } else {
         continueBtn.style.display = 'none';
         continueBtn.onclick = null;  // safety: remove redirect if conditions aren't met
@@ -330,6 +336,11 @@ body {
     document.querySelectorAll('#first_name, #last_name, #username, #birthday').forEach(input => {
       input.addEventListener('input', checkFieldsForContinue);
     });
+
+    function redirectToDashboard() {
+      window.location.href = "{% url 'dashboard' %}";
+    }
+    
 
     let currentSlide = 0;
     const totalSlides = 3;

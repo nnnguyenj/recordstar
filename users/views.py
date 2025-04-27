@@ -25,12 +25,10 @@ def google_login(request):
         request.session['account_type'] = account_type
     return oauth2_login(request)
 
-@login_required
+
 def dashboard_view(request):
     context = {"user": request.user}
     
-    # get CDs not in any collection or in public collections
-    # distinct() removes duplicates
     public_cds = CD.objects.filter(
         Q(collections__isnull=True) | 
         Q(collections__is_public=True)
@@ -595,7 +593,6 @@ def delete_profile_picture(request):
         messages.success(request, "Profile picture reset to default.")
     return redirect('profile')  # or whatever your profile view name is
 
-
 def search_results(request):
     query = request.GET.get('q', '').strip()
     user = request.user
@@ -604,24 +601,42 @@ def search_results(request):
     collection_results = []
 
     if query:
-        cd_results = CD.objects.filter(
-            Q(title__icontains=query) |
-            Q(artist__icontains=query) |
-            Q(unique_code__icontains=query) |
-            Q(genre__icontains=query) |
-            Q(release_year__icontains=query)
-        ).distinct()
+        if user.is_authenticated:
+            cd_results = CD.objects.filter(
+                Q(title__icontains=query) |
+                Q(artist__icontains=query) |
+                Q(unique_code__icontains=query) |
+                Q(genre__icontains=query) |
+                Q(release_year__icontains=query)
+            ).filter(
+                Q(collections__isnull=True) |
+                Q(collections__is_public=True) |
+                Q(owner=user)
+            ).distinct()
 
-        cd_results = cd_results.filter(
-            Q(collections__isnull=True) |
-            Q(collections__is_public=True) |
-            Q(owner=user)
-        ).distinct()
+            collection_results = Collection.objects.filter(
+                Q(name__icontains=query),
+                Q(is_public=True) | Q(owner=user)
+            ).distinct()
 
-        collection_results = Collection.objects.filter(
-            Q(name__icontains=query),
-            Q(is_public=True) | Q(owner=user)
-        ).distinct()
+        else:  # anonymous user
+            cd_results = CD.objects.filter(
+                (
+                    Q(collections__isnull=True) |
+                    Q(collections__is_public=True)
+                ) & (
+                    Q(title__icontains=query) |
+                    Q(artist__icontains=query) |
+                    Q(unique_code__icontains=query) |
+                    Q(genre__icontains=query) |
+                    Q(release_year__icontains=query)
+                )
+            ).distinct()
+
+            collection_results = Collection.objects.filter(
+                Q(name__icontains=query),
+                Q(is_public=True)
+            ).distinct()
 
     return render(request, 'users/search_results.html', {
         'query': query,
