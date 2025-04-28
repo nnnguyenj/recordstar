@@ -12,7 +12,37 @@
   <h1>Welcome, Guest!</h1>
   <p>You're browsing public CDs. Create an account to save favorites!</p>
 {% endif %}
+
+<!--{% if collections %}
+  <h3 class="text-center mb-4">Collections</h3>
+  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3 g-md-4">
+    {% for collection in collections %}
+    <div class="col">
+      <div class="card collection-card h-100 position-relative">
+        <div class="card-body text-center" 
+             {% if collection.is_public %}
+             style="cursor: pointer;"
+             onclick="window.location.href='{% url 'collection_detail' collection.id %}'"
+             {% endif %}>
+          <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
+          <p class="text-muted small mb-0">
+            {% if collection.is_public %}
+              Public
+            {% else %}
+              Private 🔒
+            {% endif %}
+          </p>
+          <p class="text-muted small mt-2">{{ collection.cds.count }} CDs</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
+{% else %}
+  <p class="text-center text-muted">No collections to show.</p>
+{% endif %}
+  </div>
+  -->
 
   <h3 class="text-center mb-4">Browse Public Items</h3>
   
@@ -64,6 +94,7 @@
                   {% endfor %}
                 </small>
               </p>
+            
             {% else %}
               <p class="card-text">
                 <small class="text-muted">Not in any collection</small>
@@ -79,7 +110,34 @@
   {% endif %}
 </div>
 
+
 <style>
+  /*
+    .collection-card {
+      width: 100%;
+      max-width: 210px;
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(135deg, #f0f0f0, #e2e2f9);
+      border-radius: 1rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin: auto;
+    }
+    
+    .collection-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      background: linear-gradient(135deg, #e7dbff, #c2a7ff);
+    }
+    
+    .card-body h5 {
+      font-size: 1rem;
+    }
+    
+    .card-body p {
+      font-size: 0.8rem;
+    }
+
+  */
   .card {
     transition: transform 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
