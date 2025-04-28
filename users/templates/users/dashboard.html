@@ -120,7 +120,7 @@
       {% for cd in private_cds %}
         <div class="col">
           <div class="spotify-card h-100 text-center"
-               onclick="window.location.href='{% url 'collection_detail' cd.id %}'">
+               onclick="window.location.href='{% url 'public_item' cd.id %}'">
             {% if cd.cover_image %}
               <img src="{{ cd.cover_image.url }}" class="img-fluid rounded"
                    alt="Cover image" style="height:240px; width:95%; object-fit:cover;">
