@@ -25,19 +25,35 @@ def google_login(request):
         request.session['account_type'] = account_type
     return oauth2_login(request)
 
-
 def dashboard_view(request):
-    context = {"user": request.user}
-    
+    # 1) Collections: 
+    #    - if logged in, show EVERY collection (public + private titles)
+    #    - if anon, only public
+    if request.user.is_authenticated:
+        collections = Collection.objects.all().distinct()
+    else:
+        collections = Collection.objects.filter(is_public=True).distinct()
+
+    # 2) Public CDs: those not in any collection or in a public collection
     public_cds = CD.objects.filter(
-        Q(collections__isnull=True) | 
+        Q(collections__isnull=True) |
         Q(collections__is_public=True)
     ).distinct()
 
-    context["public_cds"] = public_cds
-    context["is_anon"] = request.user.is_anonymous
+    # 3) Private CDs: only for librarians, only CDs in private collections they own
+    private_cds = CD.objects.none()
+    if request.user.is_authenticated and request.user.profile.account_type == 'L':
+        private_cds = CD.objects.filter(
+            collections__is_public=False,
+            collections__owner=request.user
+        ).distinct()
 
-    return render(request, "users/dashboard.html", context)
+    return render(request, "users/dashboard.html", {
+        "collections": collections,
+        "public_cds": public_cds,
+        "private_cds": private_cds,
+    })
+
 
 @login_required
 def recent_activity_view(request):
@@ -755,16 +771,14 @@ def return_cd(request, request_id):
 
 
 def anon_user_view(request):
-    # Pull CDs not in a collection or in public collections
     public_cds = CD.objects.filter(
         Q(collections__isnull=True) | Q(collections__is_public=True)
     ).distinct()
-
-    context = {
-        "public_cds": public_cds
-    }
-
-    return render(request, "recordstar/anon_user_welcome.html", context)
+    public_collections = Collection.objects.filter(is_public=True).distinct()
+    return render(request, 'recordstar/anon_user_welcome.html', {
+        'public_cds': public_cds,
+        'public_collections': public_collections,
+    })
 
 @login_required
 def request_access_to_collection(request, collection_id):

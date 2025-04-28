@@ -49,4 +49,5 @@ urlpatterns = [
     path("anon-user/", views.anon_user_view, name="anon_user"),
     path('collection/<int:collection_id>/request-access/', views.request_access_to_collection, name='request_access_to_collection'),
     path('collection-access-request/<int:request_id>/respond/', views.respond_to_collection_access_request, name='respond_to_collection_access_request'),
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
