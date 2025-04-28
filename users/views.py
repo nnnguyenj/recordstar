@@ -634,8 +634,7 @@ def search_results(request):
             ).distinct()
 
             collection_results = Collection.objects.filter(
-                Q(name__icontains=query),
-                Q(is_public=True) | Q(owner=user)
+                Q(name__icontains=query) | Q(owner=user)
             ).distinct()
 
         else:  # anonymous user
@@ -653,8 +652,7 @@ def search_results(request):
             ).distinct()
 
             collection_results = Collection.objects.filter(
-                Q(name__icontains=query),
-                Q(is_public=True)
+                Q(name__icontains=query)
             ).distinct()
 
     return render(request, 'users/search_results.html', {
