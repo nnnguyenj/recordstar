@@ -5,7 +5,7 @@ from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from .forms import RatingForm
-from .models import Collection, Library, CD, Rating, FriendActivity, Profile, CDRequest
+from .models import Collection, Library, CD, Rating, FriendActivity, Profile, CDRequest, CollectionAccessRequest
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
@@ -225,9 +225,13 @@ def collection_detail_view(request, collection_id):
         cd_id = request.POST.get("cd_id")
         if cd_id:
             cd = get_object_or_404(CD, id=cd_id)
+
+            #if adding to a private collection, remove from other collections first
+            if not collection.is_public:
+                cd.collections.clear()
+
             collection.cds.add(cd)
             return redirect("collection_detail", collection_id=collection.id)
-
     query = request.GET.get("q", "").strip()
     cds = collection.cds.all()
     if query:
@@ -552,21 +556,20 @@ def delete_rating(request, rating_id):
     return redirect('ratings')
 
 @login_required
-def add_cd_to_collection(request, cd_id):
+def add_cd_to_collection(request, collection_id, cd_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+
     cd = get_object_or_404(CD, id=cd_id)
-    collection_id = request.POST.get("collection_id")
-
-    # patrons can only add their own CDs
-    if request.user.profile.account_type != 'L' and cd.owner != request.user:
-        return HttpResponseForbidden("Patrons can only add their own CDs to collections.")
-
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
 
     if request.method == "POST":
+        #if adding to a private collection, remove from other collections first
+        if not collection.is_public:
+            cd.collections.clear()
+        
         collection.cds.add(cd)
-        messages.success(request, f"Added '{cd.title}' to '{collection.name}'.")
-    
-    return redirect("library")
+        messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
+
+    return redirect('public_item', cd_id=cd_id)
 
 @login_required
 def create_collection_with_cd(request, cd_id):
@@ -747,3 +750,44 @@ def anon_user_view(request):
     }
 
     return render(request, "recordstar/anon_user_welcome.html", context)
+
+@login_required
+def request_access_to_collection(request, collection_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+    if collection.owner == request.user:
+        messages.info(request, "You already own this collection.")
+        return redirect('collection')
+    if CollectionAccessRequest.objects.filter(collection=collection, requester=request.user, status='pending').exists():
+        messages.info(request, "Access request already pending.")
+        return redirect('collection')
+    if request.user in collection.allowed_users.all():
+        messages.info(request, "You already have access.")
+        return redirect('collection')
+    CollectionAccessRequest.objects.create(collection=collection, requester=request.user)
+    messages.success(request, "Access request sent.")
+    return redirect('collection')
+
+@login_required
+def respond_to_collection_access_request(request, request_id):
+    access_request = get_object_or_404(CollectionAccessRequest, id=request_id)
+
+    if request.user.profile.account_type != 'L':
+        return HttpResponseForbidden("Only librarians can approve or reject access requests.")
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'approve':
+            access_request.status = 'approved'
+            access_request.collection.allowed_users.add(access_request.requester)
+            access_request.save()
+            messages.success(request, f"Access granted to {access_request.requester.username}.")
+
+        elif action == 'reject':
+            access_request.status = 'rejected'
+            access_request.save()
+            messages.info(request, f"Access request rejected for {access_request.requester.username}.")
+
+        return redirect('collection')
+
+    return render(request, 'users/respond_to_collection_access_request.html', {'access_request': access_request})
