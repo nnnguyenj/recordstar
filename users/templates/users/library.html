@@ -1,6 +1,25 @@
 {% extends "base.html" %}
 {% load bootstrap5 %}
 
+{% block extra_css %}
+<style>
+  .custom-collapse-btn {
+    background-color: #632fbd;
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 0.4rem 1.2rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  .custom-collapse-btn:hover {
+    background-color: #7B3FE4;  /* darker on hover */
+    transform: scale(1.05);
+    color: white;
+  }
+</style>
+{% endblock %}
+
 {% block title %}
   {% if is_librarian %}All CDs{% else %}{{ user.username }}'s Library{% endif %}
 {% endblock %}
@@ -10,7 +29,7 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>{% if is_librarian %}All CDs{% else %}{{ user.username }}'s Library{% endif %}</h2>
-    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#addCdForm" aria-expanded="false" aria-controls="addCdForm" style="background-color: #7B3FE4; color: white;">
+    <button class="btn custom-collapse-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addCdForm" aria-expanded="false" aria-controls="addCdForm">
       <i class="fa fa-plus"></i> Add New CD
     </button>
   </div>

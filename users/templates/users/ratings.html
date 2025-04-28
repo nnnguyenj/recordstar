@@ -180,18 +180,20 @@
   }
   
   .create-btn {
-    background-color: #560BAD;
+    background-color: #632fbd;    /* deep purple */
     color: white;
-    font-weight: 500;
+    border: none;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    padding: 0.5rem 1.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
   }
-
+  
   .create-btn:hover {
-    background-color: #7B3FE4;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(123, 63, 228, 0.3);
+    background-color: #7B3FE4;    /* lighter purple */
+    transform: scale(1.05);
+    color: white;
   }
+  
   
   /* Modal button animations */
   #deleteRatingForm button {

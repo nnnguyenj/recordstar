@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
+
 {% block title %}Your Collections{% endblock %}
 
 {% block content %}
@@ -122,6 +123,23 @@
 </div>
 
 <!-- Delete Modal and JS (your original code) -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Collection</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete “<span id="collectionName"></span>”?
+      </div>
+      <div class="modal-footer">
+        <button id="cancelDeleteBtn" type="button" class="btn btn-secondary">Cancel</button>
+        <button id="confirmDeleteBtn" type="button" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- (unchanged) -->
 <style>
   .collection-card {
@@ -150,15 +168,17 @@
   }
   
   .create-btn {
-    border-color: #560BAD;
-    color: #560BAD;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-
-  .create-btn:hover {
-    background-color: #7B3FE4;
+    background-color: #632fbd;    /* deep purple */
     color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .create-btn:hover {
+    background-color: #7B3FE4;    /* lighter purple */
+    transform: scale(1.05);
   }
 
   .dropdown-menu {
@@ -223,7 +243,7 @@
     });
     
     // Handle delete confirmation
-    document.getElementById('confirmDelete').addEventListener('click', function() {
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
       if (collectionToDelete) {
         fetch(`/collection/${collectionToDelete}/delete/`, {
           method: 'POST',
@@ -243,5 +263,5 @@
       }
     });
   });
-
+</script>
 {% endblock %}
