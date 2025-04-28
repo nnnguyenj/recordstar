@@ -5,7 +5,7 @@ from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from .forms import RatingForm
-from .models import Collection, Library, CD, Rating, FriendActivity, Profile, CDRequest, CDRequestAccess
+from .models import Collection, Library, CD, Rating, FriendActivity, Profile, CDRequest, CollectionAccessRequest
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
@@ -25,21 +25,35 @@ def google_login(request):
         request.session['account_type'] = account_type
     return oauth2_login(request)
 
-@login_required
 def dashboard_view(request):
-    context = {"user": request.user}
-    
-    # get CDs not in any collection or in public collections
-    # distinct() removes duplicates
+    # 1) Collections:
+    #    - if logged in, show EVERY collection (public + private titles)
+    #    - if anon, only public
+    if request.user.is_authenticated:
+        collections = Collection.objects.all().distinct()
+    else:
+        collections = Collection.objects.filter(is_public=True).distinct()
+
+    # 2) Public CDs: those not in any collection or in a public collection
     public_cds = CD.objects.filter(
-        Q(collections__isnull=True) | 
+        Q(collections__isnull=True) |
         Q(collections__is_public=True)
     ).distinct()
 
-    context["public_cds"] = public_cds
-    context["is_anon"] = request.user.is_anonymous
+    # 3) Private CDs: only for librarians, only CDs in private collections they own
+    private_cds = CD.objects.none()
+    if request.user.is_authenticated and request.user.profile.account_type == 'L':
+        private_cds = CD.objects.filter(
+            collections__is_public=False,
+            collections__owner=request.user
+        ).distinct()
 
-    return render(request, "users/dashboard.html", context)
+    return render(request, "users/dashboard.html", {
+        "collections": collections,
+        "public_cds": public_cds,
+        "private_cds": private_cds,
+    })
+
 
 @login_required
 def recent_activity_view(request):
@@ -212,23 +226,8 @@ def add_collection_view(request):
 def collection_detail_view(request, collection_id):
     collection = get_object_or_404(Collection, id=collection_id)
 
-    has_access = (
-            collection.is_public or
-            request.user == collection.owner or
-            request.user.profile.account_type == 'L' or
-            CDRequestAccess.objects.filter(
-                requester=request.user,
-                collection=collection,
-                approved=True
-            ).exists()
-    )
-
-    if not has_access:
-        has_requested = CDRequestAccess.objects.filter(requester=request.user, collection=collection).exists()
-        return render(request, "users/collection_detail_limited.html", {
-            "collection": collection,
-            "has_requested": has_requested,
-        })
+    if not collection.is_public and request.user != collection.owner and request.user.profile.account_type != 'L':
+        return render(request, "users/collection_detail_limited.html", {"collection": collection})
 
     is_librarian = request.user.profile.account_type == 'L'
     if is_librarian:
@@ -240,9 +239,13 @@ def collection_detail_view(request, collection_id):
         cd_id = request.POST.get("cd_id")
         if cd_id:
             cd = get_object_or_404(CD, id=cd_id)
+
+            #if adding to a private collection, remove from other collections first
+            if not collection.is_public:
+                cd.collections.clear()
+
             collection.cds.add(cd)
             return redirect("collection_detail", collection_id=collection.id)
-
     query = request.GET.get("q", "").strip()
     cds = collection.cds.all()
     if query:
@@ -574,21 +577,20 @@ def delete_rating(request, rating_id):
     return redirect('ratings')
 
 @login_required
-def add_cd_to_collection(request, cd_id):
+def add_cd_to_collection(request, collection_id, cd_id):
+    collection = get_object_or_404(Collection, id=collection_id)
+
     cd = get_object_or_404(CD, id=cd_id)
-    collection_id = request.POST.get("collection_id")
-
-    # patrons can only add their own CDs
-    if request.user.profile.account_type != 'L' and cd.owner != request.user:
-        return HttpResponseForbidden("Patrons can only add their own CDs to collections.")
-
-    collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
 
     if request.method == "POST":
+        #if adding to a private collection, remove from other collections first
+        if not collection.is_public:
+            cd.collections.clear()
+
         collection.cds.add(cd)
-        messages.success(request, f"Added '{cd.title}' to '{collection.name}'.")
-    
-    return redirect("library")
+        messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
+
+    return redirect('public_item', cd_id=cd_id)
 
 @login_required
 def create_collection_with_cd(request, cd_id):
@@ -617,7 +619,6 @@ def delete_profile_picture(request):
         messages.success(request, "Profile picture reset to default.")
     return redirect('profile')  # or whatever your profile view name is
 
-
 def search_results(request):
     query = request.GET.get('q', '').strip()
     user = request.user
@@ -626,24 +627,40 @@ def search_results(request):
     collection_results = []
 
     if query:
-        cd_results = CD.objects.filter(
-            Q(title__icontains=query) |
-            Q(artist__icontains=query) |
-            Q(unique_code__icontains=query) |
-            Q(genre__icontains=query) |
-            Q(release_year__icontains=query)
-        ).distinct()
+        if user.is_authenticated:
+            cd_results = CD.objects.filter(
+                Q(title__icontains=query) |
+                Q(artist__icontains=query) |
+                Q(unique_code__icontains=query) |
+                Q(genre__icontains=query) |
+                Q(release_year__icontains=query)
+            ).filter(
+                Q(collections__isnull=True) |
+                Q(collections__is_public=True) |
+                Q(owner=user)
+            ).distinct()
 
-        cd_results = cd_results.filter(
-            Q(collections__isnull=True) |
-            Q(collections__is_public=True) |
-            Q(owner=user)
-        ).distinct()
+            collection_results = Collection.objects.filter(
+                Q(name__icontains=query) | Q(owner=user)
+            ).distinct()
 
-        collection_results = Collection.objects.filter(
-            Q(name__icontains=query),
-            Q(is_public=True) | Q(owner=user)
-        ).distinct()
+        else:  # anonymous user
+            cd_results = CD.objects.filter(
+                (
+                    Q(collections__isnull=True) |
+                    Q(collections__is_public=True)
+                ) & (
+                    Q(title__icontains=query) |
+                    Q(artist__icontains=query) |
+                    Q(unique_code__icontains=query) |
+                    Q(genre__icontains=query) |
+                    Q(release_year__icontains=query)
+                )
+            ).distinct()
+
+            collection_results = Collection.objects.filter(
+                Q(name__icontains=query)
+            ).distinct()
 
     return render(request, 'users/search_results.html', {
         'query': query,
@@ -759,29 +776,52 @@ def return_cd(request, request_id):
 
 
 def anon_user_view(request):
-    # Pull CDs not in a collection or in public collections
     public_cds = CD.objects.filter(
         Q(collections__isnull=True) | Q(collections__is_public=True)
     ).distinct()
+    public_collections = Collection.objects.filter(is_public=True).distinct()
+    return render(request, 'recordstar/anon_user_welcome.html', {
+        'public_cds': public_cds,
+        'public_collections': public_collections,
+    })
 
-    context = {
-        "public_cds": public_cds
-    }
-
-    return render(request, "recordstar/anon_user_welcome.html", context)
-
-# views.py
 @login_required
-def request_access(request, collection_id):
+def request_access_to_collection(request, collection_id):
     collection = get_object_or_404(Collection, id=collection_id)
+    if collection.owner == request.user:
+        messages.info(request, "You already own this collection.")
+        return redirect('collection')
+    if CollectionAccessRequest.objects.filter(collection=collection, requester=request.user, status='pending').exists():
+        messages.info(request, "Access request already pending.")
+        return redirect('collection')
+    if request.user in collection.allowed_users.all():
+        messages.info(request, "You already have access.")
+        return redirect('collection')
+    CollectionAccessRequest.objects.create(collection=collection, requester=request.user)
+    messages.success(request, "Access request sent.")
+    return redirect('collection')
 
-    # Disallow access requests for public collections or for owners
-    if collection.is_public or collection.owner == request.user:
-        return redirect('collection_detail', collection_id=collection.id)
+@login_required
+def respond_to_collection_access_request(request, request_id):
+    access_request = get_object_or_404(CollectionAccessRequest, id=request_id)
 
-    CDRequestAccess.objects.get_or_create(
-        requester=request.user,
-        collection=collection
-    )
+    if request.user.profile.account_type != 'L':
+        return HttpResponseForbidden("Only librarians can approve or reject access requests.")
 
-    return redirect('collection_detail', collection_id=collection.id)
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'approve':
+            access_request.status = 'approved'
+            access_request.collection.allowed_users.add(access_request.requester)
+            access_request.save()
+            messages.success(request, f"Access granted to {access_request.requester.username}.")
+
+        elif action == 'reject':
+            access_request.status = 'rejected'
+            access_request.save()
+            messages.info(request, f"Access request rejected for {access_request.requester.username}.")
+
+        return redirect('collection')
+
+    return render(request, 'users/respond_to_collection_access_request.html', {'access_request': access_request})

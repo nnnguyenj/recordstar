@@ -18,6 +18,7 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
     is_collection_public = models.BooleanField(default=True)
+    birthday = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} ({self.get_account_type_display()})"
@@ -104,6 +105,7 @@ class Collection(models.Model):
     is_public = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     cds = models.ManyToManyField(CD, blank=True, related_name="collections")
+    allowed_users = models.ManyToManyField(User, blank=True, related_name="allowed_collections")
 
     def __str__(self):
         return f"{self.name} ({'Public' if self.is_public else 'Private'})"
@@ -115,11 +117,11 @@ class Library(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Library"
 
-class CDRequestAccess(models.Model):
+class CollectionAccessRequest(models.Model):
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name='access_requests')
     requester = models.ForeignKey(User, on_delete=models.CASCADE)
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    approved = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending')
+    requested_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ('requester', 'collection')
+    def __str__(self):
+        return f"{self.requester.username} requests access to {self.collection.name}"

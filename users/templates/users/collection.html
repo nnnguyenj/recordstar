@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
+
 {% block title %}Your Collections{% endblock %}
 
 {% block content %}
@@ -18,7 +19,6 @@
     {% for collection in own_collections %}
     <div class="col">
       <div class="card collection-card h-100 position-relative">
-        <!-- Dropdown positioned absolutely, separate from main clickable body -->
         <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
             <button class="dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false"></button>
             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -36,12 +36,19 @@
             </li>
           </ul>
         </div>
-    
+
         <!-- Main body clickable for detail -->
         <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
           <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
           <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
           <p class="text-muted small mt-2">{{ collection.cds.count }} CDs</p>
+
+          <!-- Request Access Button for Private Collections -->
+          {% if not collection.is_public and user != collection.owner and user.profile.account_type == 'P' and user not in collection.allowed_users.all %}
+            <a href="{% url 'request_access_to_collection' collection.id %}" class="btn btn-sm btn-outline-primary mt-2">
+              Request Access
+            </a>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -58,7 +65,6 @@
       {% for collection in other_collections %}
       <div class="col">
         <div class="card collection-card h-100 position-relative">
-          <!-- Dropdown positioned absolutely, separate from main clickable body -->
           <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
             <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
               ⋮
@@ -76,45 +82,65 @@
               </li>
             </ul>
           </div>
-      
-          <!-- Main body clickable for detail -->
+
           <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
             <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
             <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
             <p class="text-muted small mb-0">Owner: {{ collection.owner.username }}</p>
             <p class="text-muted small mt-2">{{ collection.cds.count }} CDs</p>
+
+            <!-- Request Access Button for Other Users' Collections -->
+            {% if not collection.is_public and user != collection.owner and user.profile.account_type == 'P' and user not in collection.allowed_users.all %}
+              <a href="{% url 'request_access_to_collection' collection.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                Request Access
+              </a>
+            {% endif %}
           </div>
         </div>
       </div>
       {% endfor %}
     </div>
   {% endif %}
+
+  <!-- Librarian: Show Pending Access Requests -->
+  {% if is_librarian %}
+    <h2 class="fw-bold mt-5 mb-4" style="color: #560BAD;">Pending Access Requests</h2>
+    {% for collection in own_collections %}
+      {% for request in collection.access_requests.all %}
+        {% if request.status == 'pending' %}
+          <div class="mb-3 p-3 border rounded">
+            <p><strong>{{ request.requester.username }}</strong> requested access to <strong>{{ collection.name }}</strong> on {{ request.requested_at|date:"M d, Y" }}</p>
+            <form method="post" action="{% url 'respond_to_collection_access_request' request.id %}">
+              {% csrf_token %}
+              <button name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+              <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+            </form>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  {% endif %}
 </div>
 
-<!-- Custom Delete Confirmation Modal -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+<!-- Delete Modal and JS (your original code) -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="border-radius: 1rem; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden;">
-      <div class="modal-header" style="background: linear-gradient(135deg, #e7dbff, #c2a7ff); border: none; padding: 1.5rem;">
-        <h5 class="modal-title fw-bold" style="color: #560BAD;">Delete Collection</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Collection</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-4">
-        <p class="mb-0">Are you sure you want to delete <strong id="collectionName"></strong>?</p>
-        <p class="text-muted small mt-2">This action cannot be undone.</p>
+      <div class="modal-body">
+        Are you sure you want to delete “<span id="collectionName"></span>”?
       </div>
-      <div class="modal-footer" style="border-top: none; padding: 1rem 1.5rem 1.5rem;">
-        <button type="button" class="btn px-4" data-bs-dismiss="modal" style="background-color: #f0f0f0; color: #555; font-weight: 500; border-radius: 8px;">
-          Cancel
-        </button>
-        <button type="button" id="confirmDelete" class="btn px-4" style="background-color: #e74c3c; color: white; font-weight: 500; border-radius: 8px;">
-          Delete
-        </button>
+      <div class="modal-footer">
+        <button id="cancelDeleteBtn" type="button" class="btn btn-secondary">Cancel</button>
+        <button id="confirmDeleteBtn" type="button" class="btn btn-danger">Delete</button>
       </div>
     </div>
   </div>
 </div>
-
+<!-- (unchanged) -->
 <style>
   .collection-card {
     width: 100%;
@@ -142,15 +168,17 @@
   }
   
   .create-btn {
-    border-color: #560BAD;
-    color: #560BAD;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-
-  .create-btn:hover {
-    background-color: #7B3FE4;
+    background-color: #632fbd;    /* deep purple */
     color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .create-btn:hover {
+    background-color: #7B3FE4;    /* lighter purple */
+    transform: scale(1.05);
   }
 
   .dropdown-menu {
@@ -215,7 +243,7 @@
     });
     
     // Handle delete confirmation
-    document.getElementById('confirmDelete').addEventListener('click', function() {
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
       if (collectionToDelete) {
         fetch(`/collection/${collectionToDelete}/delete/`, {
           method: 'POST',
