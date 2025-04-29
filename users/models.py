@@ -20,6 +20,10 @@ class Profile(models.Model):
     is_collection_public = models.BooleanField(default=True)
     birthday = models.DateField(null=True, blank=True)
 
+    @property
+    def is_librarian(self):
+        return self.account_type == 'L'
+    
     def __str__(self):
         return f"{self.user.username} ({self.get_account_type_display()})"
     
@@ -103,6 +107,12 @@ class Collection(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collections")
     name = models.CharField(max_length=100)
     is_public = models.BooleanField(default=True)
+    cover_image = models.ImageField(
+        upload_to='collection_covers/',
+        null=True,
+        blank=True,
+        default='collection_covers/default.jpg'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     cds = models.ManyToManyField(CD, blank=True, related_name="collections")
     allowed_users = models.ManyToManyField(User, blank=True, related_name="allowed_collections")
@@ -116,7 +126,7 @@ class Library(models.Model):
     
     def __str__(self):
         return f"{self.user.username}'s Library"
-    
+
 class CollectionAccessRequest(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name='access_requests')
     requester = models.ForeignKey(User, on_delete=models.CASCADE)

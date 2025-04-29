@@ -26,7 +26,7 @@ def google_login(request):
     return oauth2_login(request)
 
 def dashboard_view(request):
-    # 1) Collections: 
+    # 1) Collections:
     #    - if logged in, show EVERY collection (public + private titles)
     #    - if anon, only public
     if request.user.is_authenticated:
@@ -42,7 +42,7 @@ def dashboard_view(request):
 
     # 3) Private CDs: only for librarians, only CDs in private collections they own
     private_cds = CD.objects.none()
-    if request.user.is_authenticated and request.user.profile.account_type == 'L':
+    if request.user.is_authenticated and request.user.profile.is_librarian:
         private_cds = CD.objects.filter(
             collections__is_public=False,
             collections__owner=request.user
@@ -188,7 +188,7 @@ def librarians_view(request):
     context = {
         "librarians": librarians,
     }
-    if request.user.profile.account_type == 'L':
+    if request.user.profile.is_librarian:
         patrons = User.objects.filter(profile__account_type='P')
         context["patrons"] = patrons
     
@@ -203,13 +203,13 @@ def my_collections_view(request):
     other_collections = None
     
     # If user is a librarian, get all other collections
-    if request.user.profile.account_type == 'L':
+    if request.user.profile.is_librarian:
         other_collections = Collection.objects.exclude(owner=request.user)
     
     return render(request, "users/collection.html", {
         "own_collections": own_collections,
         "other_collections": other_collections,
-        "is_librarian": request.user.profile.account_type == 'L'
+        "is_librarian": request.user.profile.is_librarian,
     })
 
 @login_required
@@ -219,6 +219,14 @@ def add_collection_view(request):
         if name:
             is_public = True if request.user.profile.account_type == 'P' else request.POST.get("is_public") == "on"
             Collection.objects.create(owner=request.user, name=name, is_public=is_public)
+            col = Collection.objects.get(
+                owner=request.user,
+                name=name,
+                is_public=is_public
+            )
+            if 'cover_image' in request.FILES:
+                col.cover_image = request.FILES['cover_image']
+                col.save()
             return redirect("collection")
     return render(request, "users/add_collection.html")
 
@@ -229,8 +237,7 @@ def collection_detail_view(request, collection_id):
     if not collection.is_public and request.user != collection.owner and request.user.profile.account_type != 'L':
         return render(request, "users/collection_detail_limited.html", {"collection": collection})
 
-    is_librarian = request.user.profile.account_type == 'L'
-    if is_librarian:
+    if request.user.profile.is_librarian:
         available_cds = CD.objects.exclude(id__in=collection.cds.values_list('id', flat=True))
     else:
         available_cds = CD.objects.filter(owner=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
@@ -260,7 +267,7 @@ def collection_detail_view(request, collection_id):
     return render(request, "users/collection_detail.html", {
         "collection": collection,
         "available_cds": available_cds,
-        "is_librarian": is_librarian,
+        "is_librarian": request.user.profile.is_librarian,
         "cds": cds,
         "query": query,
     })
@@ -271,7 +278,7 @@ def collection_detail_view(request, collection_id):
 @login_required
 def remove_cd_from_collection(request, collection_id, cd_id):
     # allow librarians to remove CDs from any collection
-    if request.user.profile.account_type == 'L':
+    if request.user.profile.is_librarian:
         collection = get_object_or_404(Collection, id=collection_id)
     else:
         collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
@@ -284,7 +291,7 @@ def remove_cd_from_collection(request, collection_id, cd_id):
 @login_required
 def delete_collection_view(request, collection_id):
     # allow librarians to delete any collection
-    if request.user.profile.account_type == 'L':
+    if request.user.profile.is_librarian:
         collection = get_object_or_404(Collection, id=collection_id)
     else:
         collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
@@ -297,7 +304,7 @@ def delete_collection_view(request, collection_id):
 
 @login_required
 def edit_collection(request, collection_id):
-    if request.user.profile.account_type == 'L':
+    if request.user.profile.is_librarian:
         collection = get_object_or_404(Collection, id=collection_id)
     else:
         collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
@@ -306,11 +313,12 @@ def edit_collection(request, collection_id):
         name = request.POST.get("name")
         if name:
             collection.name = name
-
             # Only librarians can change is_public
-            if request.user.profile.account_type == 'L':
+            if request.user.profile.is_librarian:
                 collection.is_public = request.POST.get("is_public") == "on"
-
+            if 'cover_image' in request.FILES:
+                collection.cover_image = request.FILES['cover_image']
+                
             collection.save()
             return redirect("collection_detail", collection_id=collection.id)
 
@@ -320,7 +328,7 @@ def edit_collection(request, collection_id):
 @login_required
 def toggle_collection_privacy(request, collection_id):
     # allow librarians to toggle privacy for any collection
-    if request.user.profile.account_type == 'L':
+    if request.user.profile.is_librarian:
         collection = get_object_or_404(Collection, id=collection_id)
     else:
         collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
@@ -335,14 +343,14 @@ def toggle_collection_privacy(request, collection_id):
 @login_required
 def library_view(request):
     # librarians get all CDs, patrons only their own
-    if request.user.profile.account_type == 'L':
+    if request.user.profile.is_librarian:
         user_cds = CD.objects.all()
     else:
         user_cds = CD.objects.filter(owner=request.user)
     
     cd_info = []
     for cd in user_cds:
-        if request.user.profile.account_type == 'L':
+        if request.user.profile.is_librarian:
             collection = cd.collections.first()
             is_owned = cd.owner == request.user
         else:
@@ -369,7 +377,7 @@ def library_view(request):
             return render(request, "users/library.html", {
                 "cd_info": cd_info,
                 "error": "Cover image is required",
-                "is_librarian": request.user.profile.account_type == 'L',
+                "is_librarian": request.user.profile.is_librarian,
                 "form_data": {
                     "title": title,
                     "artist": artist,
@@ -395,7 +403,7 @@ def library_view(request):
     
     return render(request, "users/library.html", {
         "cd_info": cd_info,
-        "is_librarian": request.user.profile.account_type == 'L',
+        "is_librarian": request.user.profile.is_librarian,
         "user_collections": user_collections,
     })
 
@@ -421,6 +429,9 @@ def add_cd_to_library(request):
 
 @login_required
 def delete_cd(request, cd_id):
+    profile = request.user.profile
+    if not profile.is_librarian:
+        return redirect('library')
     cd = get_object_or_404(CD, id=cd_id, owner=request.user)
     if request.method == "POST":
         cd.delete()
@@ -428,6 +439,10 @@ def delete_cd(request, cd_id):
 
 @login_required
 def edit_cd(request, cd_id):
+    profile = request.user.profile
+    if not profile.is_librarian:
+        return redirect('library')
+
     cd = get_object_or_404(CD, id=cd_id, owner=request.user)
     
     if request.method == "POST":
@@ -486,7 +501,7 @@ def public_item_view(request, cd_id):
 
         user_collections = Collection.objects.filter(owner=request.user)
         is_owner = cd.owner == request.user
-        is_librarian = request.user.profile.account_type == 'L'
+        is_librarian = request.user.profile.is_librarian
         can_add_to_collection = is_librarian or is_owner
 
         has_pending_request = CDRequest.objects.filter(
@@ -570,27 +585,23 @@ def delete_rating(request, rating_id):
     return redirect('ratings')
 
 @login_required
-def add_cd_to_collection(request, cd_id):
-    if request.method == "POST":
-        collection_id = request.POST.get("collection_id")
-
-        if not collection_id:
-            # Handle missing collection_id gracefully
-            return redirect("library")
-
+def add_cd_to_collection(request, collection_id, cd_id):
         collection = get_object_or_404(Collection, id=collection_id)
+
         cd = get_object_or_404(CD, id=cd_id)
 
-        # Special handling for private collections
-        if not collection.is_public:
-            cd.collections.clear()
-
+        if request.method == "POST":
+            
+            # Special handling for private collections
+            if not collection.is_public:
+                cd.collections.clear()
+                
         collection.cds.add(cd)
+        messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
 
         return redirect("collection_detail", collection_id=collection.id)
 
     # Redirect or handle non-POST requests appropriately
-    return redirect("library")
 
 @login_required
 def create_collection_with_cd(request, cd_id):
@@ -627,6 +638,7 @@ def search_results(request):
     collection_results = []
 
     if query:
+        base = Collection.objects.filter(name__icontains=query)
         if user.is_authenticated:
             cd_results = CD.objects.filter(
                 Q(title__icontains=query) |
@@ -640,8 +652,9 @@ def search_results(request):
                 Q(owner=user)
             ).distinct()
 
-            collection_results = Collection.objects.filter(
-                Q(name__icontains=query) | Q(owner=user)
+            collection_results = base.filter(
+                Q(is_public=True) |
+                Q(owner=user) | Q(is_public=False)
             ).distinct()
 
         else:  # anonymous user
@@ -658,9 +671,7 @@ def search_results(request):
                 )
             ).distinct()
 
-            collection_results = Collection.objects.filter(
-                Q(name__icontains=query)
-            ).distinct()
+            collection_results = base.filter(is_public=True).distinct()
 
     return render(request, 'users/search_results.html', {
         'query': query,
@@ -693,7 +704,7 @@ def request_cd(request, cd_id):
             requested_days=requested_days
         )
         
-        messages.success(request, f"Request sent to {cd.owner.username} for '{cd.title}'")
+        messages.success(request, f"Request sent for '{cd.title}'")
         return redirect('my_requests')
     
     return render(request, 'users/request_cd.html', {'cd': cd})
@@ -703,17 +714,24 @@ def my_requests(request):
     # Get requests made by the user
     sent_requests = CDRequest.objects.filter(requester=request.user).order_by('-request_date')
     
-    # Get requests for user's CDs
-    received_requests = CDRequest.objects.filter(cd__owner=request.user).order_by('-request_date')
+    if request.user.profile.is_librarian:
+        # librarians see ALL requests in the system
+        received_requests = CDRequest.objects.all().order_by('-request_date')
+    else:
+        received_requests = CDRequest.objects.none()
     
     return render(request, 'users/my_requests.html', {
         'sent_requests': sent_requests,
-        'received_requests': received_requests
+        'received_requests': received_requests,
+        'is_librarian': request.user.profile.is_librarian,
     })
 
 @login_required
 def respond_to_request(request, request_id):
-    cd_request = get_object_or_404(CDRequest, id=request_id, cd__owner=request.user)
+    if request.user.profile.is_librarian:
+        cd_request = get_object_or_404(CDRequest, id=request_id)
+    else:
+        return HttpResponseForbidden("Only librarians can respond to borrow requests.")
     
     if request.method == 'POST':
         response = request.POST.get('response')
@@ -734,13 +752,13 @@ def respond_to_request(request, request_id):
             cd.save()
             cd_request.save()
             
-            messages.success(request, f"You've approved the request. '{cd.title}' is now checked out to {cd_request.requester.username}.")
+            messages.success(request, f"Request approved. '{cd.title}' is now checked out to {cd_request.requester.username}.")
         
         elif response == 'reject':
             cd_request.status = 'rejected'
             cd_request.response_date = timezone.now()
             cd_request.save()
-            messages.info(request, "Request rejected.")
+            messages.info(request, f"Request rejected.")
         
         return redirect('my_requests')
     
@@ -748,13 +766,20 @@ def respond_to_request(request, request_id):
 
 @login_required
 def return_cd(request, request_id):
-    # Allow both the borrower and the owner to mark as returned
-    cd_request = get_object_or_404(
-        CDRequest, 
-        Q(requester=request.user) | Q(cd__owner=request.user),
-        id=request_id,
-        status='approved'
-    )
+    profile = request.user.profile
+    if profile.is_librarian:
+        cd_request = get_object_or_404(
+            CDRequest,
+            id=request_id,
+            status='approved'
+        )
+    else:
+        cd_request = get_object_or_404(
+            CDRequest,
+            requester=request.user,
+            id=request_id,
+            status='approved'
+        )
     
     if request.method == 'POST':
         cd_request.status = 'returned'

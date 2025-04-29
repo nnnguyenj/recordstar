@@ -21,12 +21,41 @@
   <style>
     body {
       font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 240px;           /* match sidebar width */
+      right: 0;
+      height: 60px;          /* adjust to your header height */
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 20px;
+      z-index: 2000;
+    }
+    /* Main content should start below topbar and beside sidebar */
+    .main-area {
+      margin-left: 400px;    /* same as sidebar width */
+      margin-top: 60px;
+      padding: 20px;
+      background-color: #fff;
+      min-height: calc(100vh - 60px);
     }
     /* Sidebar styling */
     .sidebar {
-      background-color: #ebeff1;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 240px;          /* adjust as needed */
       min-height: 100vh;
+      overflow-y: auto;
+      background-color: #ebeff1;
       padding: 20px;
+      z-index: 1000;
     }
     .sidebar h2 {
       padding: 0.5rem;
@@ -178,7 +207,7 @@
     
       <!-- 🆕 Main content area -->
       <main class="col-md-9 col-lg-10 d-flex flex-column" style="background-color: #fcfcfc;">
-        <div class="d-flex justify-content-end align-items-center p-3">
+        <div class="topbar d-flex justify-content-end align-items-center p-3">
           <div class="dropdown d-flex align-items-center">
             {% if user.is_authenticated %}
               {% if user.profile.image %}
@@ -200,7 +229,7 @@
           </div>
         </div>
     
-        <div class="flex-fill p-3">
+        <div class="flex-fill p-3 main-area">
           {% block content %}{% endblock %}
         </div>
     

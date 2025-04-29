@@ -10,9 +10,11 @@
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">Sent Requests</button>
     </li>
+    {% if request.user.profile.is_librarian %}
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">Received Requests</button>
     </li>
+    {% endif %}
   </ul>
   
   <div class="tab-content mt-3">
@@ -36,7 +38,6 @@
                   {% endif %}
                 </small>
               </div>
-              <p class="mb-1">Owner: {{ request.cd.owner.username }}</p>
               <p class="mb-1">Requested: {{ request.request_date|date:"F j, Y" }}</p>
               
               {% if request.status == 'approved' %}
@@ -54,8 +55,9 @@
       {% endif %}
     </div>
     
+    {% if request.user.profile.is_librarian %}
     <div class="tab-pane fade" id="received" role="tabpanel">
-      <h4>Requests for My CDs</h4>
+      <h4>Library Requests</h4>
       {% if received_requests %}
         <div class="list-group">
           {% for request in received_requests %}
@@ -91,18 +93,16 @@
                 </form>
               {% elif request.status == 'approved' %}
                 <p>Due: {{ request.cd.due_date|date:"F j, Y" }}</p>
-                <form method="POST" action="{% url 'return_cd' request.id %}">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-sm btn-primary">Mark as Returned</button>
-                </form>
+                <a href="{% url 'return_cd' request.id %}" class="btn btn-sm btn-primary">Mark as Returned</a>
               {% endif %}
             </div>
           {% endfor %}
         </div>
       {% else %}
-        <p class="text-muted">You haven't received any requests yet.</p>
+        <p class="text-muted">There are no pending requests at this time.</p>
       {% endif %}
     </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
