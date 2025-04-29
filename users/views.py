@@ -511,6 +511,7 @@ def public_item_view(request, cd_id):
         ).exists()
 
     is_public = cd.is_public()
+    location_data = cd.get_visibility_label(request.user)
 
     return render(request, "users/public_item.html", {
         "cd": cd,
@@ -522,7 +523,9 @@ def public_item_view(request, cd_id):
         "avg_rating": avg_rating,
         "has_pending_request": has_pending_request,
         "is_public": is_public,
+        "location_data": location_data,
     })
+
 
 @login_required
 def add_to_collection(request, collection_id, cd_id):
