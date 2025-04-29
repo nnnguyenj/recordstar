@@ -227,12 +227,12 @@ def collection_detail_view(request, collection_id):
                         requester=request.user,
                         status='pending'
                     ).exists()
-    
+
     has_access = (collection.is_public or 
                  request.user == collection.owner or 
                  request.user.profile.is_librarian or 
                  request.user in allowed_users)
-    
+
     if not has_access:
         return render(request, "users/collection_detail_limited.html", {
             "collection": collection, 
@@ -254,15 +254,9 @@ def collection_detail_view(request, collection_id):
 
             collection.cds.add(cd)
             return redirect("collection_detail", collection_id=collection.id)
+
     query = request.GET.get("q", "").strip()
-    cd_list = []
-    for cd in cds:
-        location_data = cd.get_visibility_label(request.user)
-    cd_list.append({
-        'cd': cd,
-        'location_label': location_data[0],
-        'location_color': location_data[1],
-    })
+    cds = collection.cds.all()
     if query:
         cds = cds.filter(
             Q(title__icontains=query) |
@@ -272,15 +266,17 @@ def collection_detail_view(request, collection_id):
             Q(release_year__icontains=query)
         )
 
+    cd_with_location = [(cd, cd.get_visibility_label(request.user)) for cd in cds]
+
     return render(request, "users/collection_detail.html", {
         "collection": collection,
         "has_requested": has_requested,
         "available_cds": available_cds,
         "is_librarian": request.user.profile.is_librarian,
-        "cds": cd_list,
+        "cds": cds,
+        "cd_with_location": cd_with_location,
         "query": query,
     })
-
 
 @login_required
 def remove_cd_from_collection(request, collection_id, cd_id):
