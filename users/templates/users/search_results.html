@@ -64,6 +64,45 @@
               </div>
             </div>
           </div>
+
+        {% elif user.is_authenticated and user in collection.allowed_users.all %}
+          <!-- Private & User has access -->
+          <div class="col">
+            <div class="spotify-card h-100 text-center"
+                 onclick="location.href='{% url 'collection_detail' collection.id %}'">
+              <div class="p-2">
+                {% if collection.cover_image %}
+                <img src="{{ collection.cover_image.url }}" class="img-fluid rounded mb-2"
+                      style="width:95%; height: auto; object-fit:cover;" alt="Cover">
+                {% endif %}
+                <h5 class="fw-bold mb-1" style="font-size:1rem;">{{ collection.name }}</h5>
+                <div class="mt-auto d-flex align-items-center justify-content-center">
+                  <p class="text-muted mb-1 me-2" style="font-size:0.9rem;">Private 🔒</p>
+                  <span class="badge bg-info">Access Granted</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        {% elif user.is_authenticated and user.profile.is_librarian %}
+          <!-- Private & Librarian -->
+          <div class="col">
+            <div class="spotify-card h-100 text-center"
+                 onclick="location.href='{% url 'collection_detail' collection.id %}'">
+              <div class="p-2">
+                {% if collection.cover_image %}
+                <img src="{{ collection.cover_image.url }}" class="img-fluid rounded mb-2"
+                      style="width:95%; height: auto; object-fit:cover;" alt="Cover">
+                {% endif %}
+                <h5 class="fw-bold mb-1" style="font-size:1rem;">{{ collection.name }}</h5>
+                <div class="mt-auto d-flex align-items-center justify-content-center">
+                  <p class="text-muted mb-1 me-2" style="font-size:0.9rem;">Private 🔒</p>
+                  <span class="badge bg-primary">Librarian Access</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
         {% else %}
           <div class="col">
             <div
