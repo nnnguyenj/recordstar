@@ -355,12 +355,15 @@ def library_view(request):
             is_owned = cd.owner == request.user
         else:
             collection = cd.collections.filter(owner=request.user).first()
-            is_owned = True  # always true for patrons (only shows their CDs)
-        
+            is_owned = True
+
+        location_data = cd.get_visibility_label(request.user)
+
         cd_info.append({
             'cd': cd,
             'collection': collection,
-            'is_owned': is_owned
+            'is_owned': is_owned,
+            'location_data': location_data,
         })
     
     user_collections = Collection.objects.filter(owner=request.user)

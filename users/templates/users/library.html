@@ -129,10 +129,7 @@
                 {% if item.collection %}
                   Collection: <span class="badge bg-primary p-2">{{ item.collection.name }}</span><br>
                 {% endif %}
-                {% with item.cd.get_visibility_label(user) as location_data %}
-                  <span class="badge bg-{{ location_data.1 }}">{{ location_data.0 }}</span>
-                {% endwith %}
-
+                <span class="badge bg-{{ item.location_data.1 }}">{{ item.location_data.0 }}</span>
               </small>
             </p>
           </div>
