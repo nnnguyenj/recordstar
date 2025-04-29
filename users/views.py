@@ -255,7 +255,14 @@ def collection_detail_view(request, collection_id):
             collection.cds.add(cd)
             return redirect("collection_detail", collection_id=collection.id)
     query = request.GET.get("q", "").strip()
-    cds = collection.cds.all()
+    cd_list = []
+    for cd in cds:
+        location_data = cd.get_visibility_label(request.user)
+    cd_list.append({
+        'cd': cd,
+        'location_label': location_data[0],
+        'location_color': location_data[1],
+    })
     if query:
         cds = cds.filter(
             Q(title__icontains=query) |
@@ -270,7 +277,7 @@ def collection_detail_view(request, collection_id):
         "has_requested": has_requested,
         "available_cds": available_cds,
         "is_librarian": request.user.profile.is_librarian,
-        "cds": cds,
+        "cds": cd_list,
         "query": query,
     })
 

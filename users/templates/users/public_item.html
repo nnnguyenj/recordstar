@@ -124,13 +124,10 @@
               <p><strong>Release Year:</strong> {% if cd.release_year %}{{ cd.release_year }}{% else %}Unknown{% endif %}</p>
               <p><strong>Added by:</strong> {{ cd.owner.username }}</p>
               <p><strong>Date Added:</strong> {{ cd.date_added|date:"F j, Y" }}</p>
-              {% with cd.get_visibility_label(user) as location_data %}
-                <p>
-                  <strong>Location:</strong>
-                  <span class="badge bg-{{ location_data.1 }}">{{ location_data.0 }}</span>
-                </p>
-              {% endwith %}
-            </div>
+              <p>
+                <strong>Location:</strong>
+                <span class="badge bg-{{ location_data.1 }}">{{ location_data.0 }}</span>
+              </p>              
             <div class="col-md-6">
                 <p><strong>Unique Code:</strong> <span class="text-monospace">{{ cd.unique_code }}</span></p>
                 
