@@ -15,22 +15,16 @@
   </div>
 
   <!-- Browse Public Items -->
-  <h3 class="text-center mb-4">Browse Public Items</h3>
+  <h3 class="text-center mb-4">Browse Public Records</h3>
   {% if public_cds %}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
       {% for cd in public_cds %}
         <div class="col">
           <div class="spotify-card h-100 text-center"
                onclick="window.location.href='{% url 'public_item' cd.id %}'">
-            {% if cd.cover_image %}
-              <img src="{{ cd.cover_image.url }}" class="img-fluid rounded"
-                   alt="Cover image" style="height:240px; width:95%; object-fit:cover;">
-            {% else %}
-              <div class="bg-light d-flex align-items-center justify-content-center" style="height:200px;">
-                No Cover Image
-              </div>
-            {% endif %}
             <div class="p-2">
+              <img src="{{ cd.cover_image.url }}" class="img-fluid rounded mb-2"
+                   alt="Cover image" style="width:95%; height: auto; object-fit:cover;">
               <h5 class="fw-bold mb-1" style="font-size:1rem;">{{ cd.title }}</h5>
               <p class="text-muted mb-1" style="font-size:0.9rem;">{{ cd.artist }}</p>
               <div class="mt-auto">
@@ -50,7 +44,7 @@
       {% endfor %}
     </div>
   {% else %}
-    <p class="text-center text-muted">No public CDs available.</p>
+    <p class="text-center text-muted">No public Records available.</p>
   {% endif %}
 
     <!-- Collections -->
@@ -64,8 +58,11 @@
             <div class="spotify-card h-100 text-center"
                  onclick="location.href='{% url 'collection_detail' collection.id %}'">
               <div class="p-2">
+                {% if collection.cover_image %}
+                <img src="{{ collection.cover_image.url }}" class="img-fluid rounded mb-2"
+                      style="width:95%; height: auto; object-fit:cover;" alt="Cover">
+                {% endif %}
                 <h5 class="fw-bold mb-1" style="font-size:1rem;">{{ collection.name }}</h5>
-                <p class="text-muted mb-1" style="font-size:0.9rem;">Public</p>
                 <div class="mt-auto">
                   <span class="badge bg-success">Public Collection</span>
                 </div>
@@ -79,9 +76,13 @@
             <div class="spotify-card h-100 text-center"
                  onclick="location.href='{% url 'collection_detail' collection.id %}'">
               <div class="p-2">
+                {% if collection.cover_image %}
+                <img src="{{ collection.cover_image.url }}" class="img-fluid rounded mb-2"
+                      style="width:95%; height: auto; object-fit:cover;" alt="Cover">
+                {% endif %}
                 <h5 class="fw-bold mb-1" style="font-size:1rem;">{{ collection.name }}</h5>
-                <p class="text-muted mb-1" style="font-size:0.9rem;">Private 🔒</p>
-                <div class="mt-auto">
+                <div class="mt-auto d-flex align-items-center justify-content-center">
+                  <p class="text-muted mb-1 me-2" style="font-size:0.9rem;">Private 🔒</p>
                   <span class="badge bg-warning text-dark">Your Private</span>
                 </div>
               </div>
@@ -98,9 +99,13 @@
               data-request-url="{% url 'request_access_to_collection' collection.id %}"
             >
               <div class="p-2">
+                {% if collection.cover_image %}
+                <img src="{{ collection.cover_image.url }}" class="img-fluid rounded mb-2"
+                      style="width:95%; height: auto; object-fit:cover;" alt="Cover">
+                {% endif %}
                 <h5 class="fw-bold mb-1" style="font-size:1rem;">{{ collection.name }}</h5>
-                <p class="text-muted mb-1" style="font-size:0.9rem;">Private 🔒</p>
-                <div class="mt-auto">
+                <div class="mt-auto d-flex align-items-center justify-content-center">
+                  <p class="text-muted mb-1 me-2" style="font-size:0.9rem;">Private 🔒</p>
                   <span class="badge bg-secondary">Request Access</span>
                 </div>
               </div>

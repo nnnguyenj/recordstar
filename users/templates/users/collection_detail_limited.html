@@ -2,8 +2,14 @@
 {% block title %}{{ collection.name }}{% endblock %}
 {% block content %}
 <div class="container mt-4">
+  {% if collection.cover_image %}
+      <div class="text-center mb-4">
+        <img src="{{ collection.cover_image.url }}" class="img-fluid rounded"
+            style="max-height:300px; max-width:300px; object-fit:cover;" alt="Cover">
+      </div>
+    {% endif %}
   <h2>{{ collection.name }}</h2>
-  <p class="text-muted">This collection is private. You can only view its title.</p>
+  <p class="text-muted">This collection is private.</p>
 
   <!-- collection_detail_limited.html -->
   {% if user.is_authenticated %}

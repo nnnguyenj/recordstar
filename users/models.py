@@ -107,6 +107,12 @@ class Collection(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collections")
     name = models.CharField(max_length=100)
     is_public = models.BooleanField(default=True)
+    cover_image = models.ImageField(
+        upload_to='collection_covers/',
+        null=True,
+        blank=True,
+        default='collection_covers/default.jpg'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     cds = models.ManyToManyField(CD, blank=True, related_name="collections")
     allowed_users = models.ManyToManyField(User, blank=True, related_name="allowed_collections")

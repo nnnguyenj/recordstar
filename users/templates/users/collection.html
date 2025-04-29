@@ -18,17 +18,17 @@
   <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3 g-md-4">
     {% for collection in own_collections %}
     <div class="col">
-      <div class="card collection-card h-100 position-relative">
+      <div class="card collection-card h-auto position-relative">
         <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
-            <button class="dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false"></button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            {% if user.profile.account_type == "L" %}
-              <li>
-                <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
-                  Make {{ collection.is_public|yesno:"Private,Public" }}
-                </a>
-              </li>
-            {% endif %}
+          <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            ⋮
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
+                Make {{ collection.is_public|yesno:"Private,Public" }}
+              </a>
+            </li>
             <li>
               <a class="dropdown-item text-danger delete-collection" href="#" data-id="{{ collection.id }}" data-name="{{ collection.name }}">
                 Delete
@@ -39,9 +39,13 @@
 
         <!-- Main body clickable for detail -->
         <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
+          {% if collection.cover_image %}
+          <img src="{{ collection.cover_image.url }}" class="card-img-top mb-2 img-fluid rounded" 
+                style="object-fit:cover; width:100%; height: auto;" alt="Cover">
+          {% endif %}
           <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
           <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
-          <p class="text-muted small mt-2">{{ collection.cds.count }} CDs</p>
+          <p class="text-muted small mt-2">{{ collection.cds.count }} Records</p>
 
           <!-- Request Access Button for Private Collections -->
           {% if not collection.is_public and user != collection.owner and user.profile.account_type == 'P' and user not in collection.allowed_users.all %}
@@ -84,10 +88,14 @@
           </div>
 
           <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
+            {% if collection.cover_image %}
+            <img src="{{ collection.cover_image.url }}" class="card-img-top mb-2 img-fluid rounded" 
+                  style="object-fit:cover; width:100%; height: auto;" alt="Cover">
+            {% endif %}
             <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
             <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
             <p class="text-muted small mb-0">Owner: {{ collection.owner.username }}</p>
-            <p class="text-muted small mt-2">{{ collection.cds.count }} CDs</p>
+            <p class="text-muted small mt-2">{{ collection.cds.count }} Records</p>
 
             <!-- Request Access Button for Other Users' Collections -->
             {% if not collection.is_public and user != collection.owner and user.profile.account_type == 'P' and user not in collection.allowed_users.all %}
@@ -108,6 +116,7 @@
     {% for collection in own_collections %}
       {% for request in collection.access_requests.all %}
         {% if request.status == 'pending' %}
+          {% with has_pending_requests=True %}
           <div class="mb-3 p-3 border rounded">
             <p><strong>{{ request.requester.username }}</strong> requested access to <strong>{{ collection.name }}</strong> on {{ request.requested_at|date:"M d, Y" }}</p>
             <form method="post" action="{% url 'respond_to_collection_access_request' request.id %}">
@@ -116,9 +125,13 @@
               <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
             </form>
           </div>
+          {% endwith %}
         {% endif %}
       {% endfor %}
     {% endfor %}
+    {% if not has_pending_requests %}
+      <p class="ms-4 text-muted">No pending access requests.</p>
+    {% endif %}
   {% endif %}
 </div>
 
@@ -145,14 +158,34 @@
   .collection-card {
     width: 100%;
     max-width: 210px;
-    aspect-ratio: 1 / 1; /* Keeps it perfectly square */
+    height: 260px;              /* fixed height to contain image + text */
     background: linear-gradient(135deg, #f0f0f0, #e2e2f9);
     border-radius: 1rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: relative;
     margin: auto;
+    overflow: hidden;           /* hide anything that spills out */
+    display: flex;              /* make it a flex column */
+    flex-direction: column;
   }
-  
+
+  /* ensure the card-body grows to fill and centers its contents */
+  .collection-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  /* clamp long titles to a single line with ellipsis */
+  .collection-card .card-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .collection-card:hover {
     transform: scale(1.03);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);

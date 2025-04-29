@@ -24,17 +24,17 @@
 {% endblock %}
 
 {% block title %}
-  {% if is_librarian %}All CDs{% else %}{{ user.username }}'s Library{% endif %}
+  {% if is_librarian %}All Records{% else %}{{ user.username }}'s Library{% endif %}
 {% endblock %}
 
 {% block content %}
 
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>{% if is_librarian %}All CDs{% else %}{{ user.username }}'s Library{% endif %}</h2>
+    <h2>{% if is_librarian %}All Records{% else %}{{ user.username }}'s Library{% endif %}</h2>
     {% if is_librarian %}
       <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#addCdForm" aria-expanded="false" aria-controls="addCdForm" style="background-color: #7B3FE4; color: white;">
-        <i class="fa fa-plus"></i> Add New CD
+        <i class="fa fa-plus"></i> Add New Record
       </button>
     {% endif %}
   </div>
@@ -42,13 +42,13 @@
   {% if is_librarian %}
     <div class="collapse mb-4" id="addCdForm">
       <div class="card">
-        <div class="card-header">Add New CD to Library</div>
+        <div class="card-header">Add New Record to Library</div>
         <div class="card-body">
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row g-3">
               <div class="col-md-6">
-                <label for="title" class="form-label">CD Title</label>
+                <label for="title" class="form-label">Record Title</label>
                 <input type="text" name="title" id="title" class="form-control" required>
               </div>
               <div class="col-md-6">
@@ -72,7 +72,7 @@
                 <input type="file" name="cover_image" id="cover_image" class="form-control" required>
               </div>
             </div>
-            <button type="submit" class="btn btn-success mt-3">Add CD to Library</button>
+            <button type="submit" class="btn btn-success mt-3">Add Record to Library</button>
           </form>
         </div>
       </div>
@@ -81,7 +81,7 @@
 
   {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
 
-  <h4 class="mt-4 mb-3">{% if is_librarian %}All CDs{% else %}My CDs{% endif %}</h4>
+  <h4 class="mt-4 mb-3">{% if is_librarian %}All Records{% else %}My Records{% endif %}</h4>
   {% if cd_info %}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
       {% for item in cd_info %}
@@ -100,7 +100,7 @@
                 {% if is_librarian %}
                 <li><a class="dropdown-item" href="{% url 'edit_cd' item.cd.id %}">Edit</a></li>
                 <li>
-                  <form method="post" action="{% url 'delete_cd' item.cd.id %}" onsubmit="return confirm('Are you sure you want to delete this CD?');">
+                  <form method="post" action="{% url 'delete_cd' item.cd.id %}" onsubmit="return confirm('Are you sure you want to delete this Record?');">
                     {% csrf_token %}
                     <button type="submit" class="dropdown-item text-danger">Delete</button>
                   </form>
@@ -177,7 +177,7 @@
       {% endfor %}
     </div>
   {% else %}
-    <p class="text-muted">{% if is_librarian %}No CDs in the system yet.{% else %}You don't have any CDs in your library yet.{% endif %}</p>
+    <p class="text-muted">{% if is_librarian %}No Records in the system yet.{% else %}You don't have any Records in your library yet.{% endif %}</p>
   {% endif %}
 </div>
 {% endblock %}

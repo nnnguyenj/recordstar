@@ -19,7 +19,6 @@
         </div>
         <div class="col-md-9">
           <h4>{{ cd.title }} by {{ cd.artist }}</h4>
-          <p>Owner: {{ cd.owner.username }}</p>
           
           <form method="POST">
             {% csrf_token %}
