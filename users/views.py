@@ -570,20 +570,27 @@ def delete_rating(request, rating_id):
     return redirect('ratings')
 
 @login_required
-def add_cd_to_collection(request, collection_id, cd_id):
-    collection = get_object_or_404(Collection, id=collection_id)
-
-    cd = get_object_or_404(CD, id=cd_id)
-
+def add_cd_to_collection(request, cd_id):
     if request.method == "POST":
-        #if adding to a private collection, remove from other collections first
+        collection_id = request.POST.get("collection_id")
+
+        if not collection_id:
+            # Handle missing collection_id gracefully
+            return redirect("library")
+
+        collection = get_object_or_404(Collection, id=collection_id)
+        cd = get_object_or_404(CD, id=cd_id)
+
+        # Special handling for private collections
         if not collection.is_public:
             cd.collections.clear()
-        
-        collection.cds.add(cd)
-        messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
 
-    return redirect('public_item', cd_id=cd_id)
+        collection.cds.add(cd)
+
+        return redirect("collection_detail", collection_id=collection.id)
+
+    # Redirect or handle non-POST requests appropriately
+    return redirect("library")
 
 @login_required
 def create_collection_with_cd(request, cd_id):

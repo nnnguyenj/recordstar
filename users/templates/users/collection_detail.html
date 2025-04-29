@@ -7,7 +7,7 @@
 <div class="container mt-4">
   <!-- Back Button -->
   <div class="mb-3">
-    <a href="{% url 'collection' %}" class="btn btn-outline-secondary">&larr; Back to Collections</a>
+    <a href="{% url 'collection' %}" class="btn custom-btn"> &larr; Back to Collections</a>  </div>
   </div>
 
   <!-- Header with Title and Privacy -->
@@ -153,6 +153,21 @@
     visibility: visible;
     opacity: 1;
   }
+  .custom-btn {
+    background-color: #632fbd;    /* deep purple */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .custom-btn:hover {
+    background-color: #7B3FE4;    /* lighter purple on hover */
+    transform: scale(1.05);
+    color: white;
+  }
+  
 </style>
 
 <script>
