@@ -4,39 +4,45 @@
 {% block title %}{{ collection.name }} Details{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-2">
   <!-- Back Button -->
   <div class="mb-3">
-    <a href="{% url 'collection' %}" class="btn custom-btn"> &larr; Back to Collections</a>  </div>
+    <a href="{% url 'collection' %}" class="text-decoration-none" style="color: #7B3FE4;">
+      <i class="bi bi-arrow-left" style="font-size: 3rem;"></i>
+    </a>
+    
+  <!-- Header Section: Cover on Left, Info on Right -->
+  <div class="d-flex align-items-center justify-content-center gap-5 mb-4 flex-wrap">
+    <!-- Cover Image -->
+    {% if collection.cover_image %}
+      <div>
+        <img src="{{ collection.cover_image.url }}" class="img-fluid rounded"
+             style="width: 250px; height: 250px; object-fit: cover;" alt="Cover">
+      </div>
+    {% endif %}
 
-  <!-- Header with Title and Privacy -->
-  <div class="d-flex flex-row align-items-center justify-content-between">
-    <div class="d-flex flex-column align-items-center mb-4">
+    <!-- Title & Info with Pencil -->
+    <div class="d-flex flex-column align-items-start justify-content-center">
+      <p class="text-uppercase text-muted fw-semibold mb-2" style="font-size: 0.9rem;">
+        {% if collection.owner.profile.account_type == 'P' %}
+          Public Collection
+        {% else %}
+          {{ collection.is_public|yesno:"Public Collection,Private Collection" }}
+        {% endif %}
+      </p>
       <div class="d-flex align-items-center gap-2 position-relative hover-container" style="cursor: pointer;">
-        <h2 class="fw-bold mb-0 text-center">
-          {{ collection.name }}
-        </h2>
+        <h1 class="fw-bold display-4 mb-0" style="color: #5E548E;">{{ collection.name }}</h1>
         {% if user == collection.owner or user.profile.account_type == 'L' %}
           <a class="text-muted pencil-icon" data-bs-toggle="modal" data-bs-target="#renameModal" role="button">
             <i class="fa fa-pencil-alt"></i>
           </a>
         {% endif %}
-      </div>    
-        <p class="text-muted mt-2">
-          Privacy: 
-          {% if collection.owner.profile.account_type == 'P' %}
-            Public
-          {% else %}
-            {{ collection.is_public|yesno:"Public,Private" }}
-          {% endif %}
-        </p>
-    </div>
-    {% if collection.cover_image %}
-      <div class="text-center mb-4">
-        <img src="{{ collection.cover_image.url }}" class="img-fluid rounded"
-            style="max-height:300px; max-width:300px; object-fit:cover;" alt="Cover">
       </div>
-    {% endif %}
+      <p class="text-muted mt-2 mb-0">
+        Created by <strong>{{ collection.owner.username }}</strong>
+      </p>
+    </div>
+  </div>
   </div>
 
   <form method="GET" class="mb-4">
