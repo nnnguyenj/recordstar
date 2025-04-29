@@ -19,6 +19,7 @@ class Profile(models.Model):
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
     is_collection_public = models.BooleanField(default=True)
     birthday = models.DateField(null=True, blank=True)
+    profile_completed = models.BooleanField(default=False)
 
     @property
     def is_librarian(self):
