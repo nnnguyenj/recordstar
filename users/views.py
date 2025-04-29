@@ -272,6 +272,8 @@ def collection_detail_view(request, collection_id):
         )
 
     cd_with_location = [(cd, cd.get_visibility_label(request.user)) for cd in cds]
+    
+    all_librarians = User.objects.filter(profile__account_type='L')
 
     return render(request, "users/collection_detail.html", {
         "collection": collection,
@@ -281,6 +283,7 @@ def collection_detail_view(request, collection_id):
         "cds": cds,
         "cd_with_location": cd_with_location,
         "query": query,
+        "all_librarians": all_librarians,
     })
 
 @login_required

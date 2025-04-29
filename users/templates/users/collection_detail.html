@@ -45,41 +45,116 @@
   </div>
   </div>
 
-  <form method="GET" class="mb-4">
-    <div class="input-group">
-      <input type="text" name="q" class="form-control" placeholder="Search Records in this collection..." value="{{ query }}">
-      <button class="btn btn-outline-secondary" type="submit">Search</button>
+  <!-- Expanding Search -->
+<!-- Header and Search aligned horizontally -->
+<!-- Header row with title + dots left, search bar right -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <!-- Left: Title and dots -->
+  <div class="d-flex align-items-center">
+    <h4 class="mb-0 me-2">Records in This Collection</h4>
+    <button class="btn btn-sm p-0" style="background: none; border: none;" data-bs-toggle="modal" data-bs-target="#accessListModal">
+      <i class="fas fa-ellipsis-v"></i>
+    </button>
+  </div>
+
+  <!-- Right: Search bar -->
+  <form method="GET" class="expandable-search" role="search">
+    <div class="search-box d-flex align-items-center">
+      <button type="button" class="icon-btn me-2" id="toggle-search" style="background: none; border: none;">
+        <i class="fa fa-search"></i>
+      </button>
+      <input type="text" name="q" class="form-control search-input" placeholder="Search Records..." value="{{ query }}">
     </div>
   </form>
+</div>
 
-  <h4 class="mt-4">Records in This Collection</h4>
+<!-- Modal OUTSIDE the row -->
+<div class="modal fade" id="accessListModal" tabindex="-1" aria-labelledby="accessListModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="accessListModalLabel">Who Can Access This Collection</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <strong>Librarians</strong>
+        <ul>
+          {% for librarian in all_librarians %}
+            <li>{{ librarian.username }}</li>
+          {% endfor %}
+        </ul>
 
-  {% if cd_with_location %}
-    <ul class="list-group mb-4">
-      {% for cd, location_data in cd_with_location %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
+        <strong>Approved Patrons</strong>
+        <ul>
+          {% for patron in collection.allowed_users.all %}
+            <li>{{ patron.username }}</li>
+          {% empty %}
+            <li><em>No approved patrons</em></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% if cd_with_location %}
+  <ul class="list-group mb-4">
+    {% for cd, location_data in cd_with_location %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+          {% if cd.cover_image %}
+            <img src="{{ cd.cover_image.url }}" class="rounded" style="height: 90px; width: 90px; object-fit: cover;">
+          {% endif %}
           <div>
             <strong>{{ cd.title }}</strong> by {{ cd.artist }}<br>
             <small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small><br>
-            <small class="text-muted">Location: <span class="badge bg-{{ location_data.1 }}">{{ location_data.0 }}</span></small>
+            <small class="text-muted">
+              Location: <span class="badge bg-{{ location_data.1 }}">{{ location_data.0 }}</span>
+            </small>
             {% if user.profile.account_type == 'L' and cd.owner != user %}
               <br><small class="text-muted">Owner: {{ cd.owner.username }}</small>
             {% endif %}
           </div>
-          {% if user == collection.owner or user.profile.account_type == 'L' %}
-          <form method="POST" action="{% url 'remove_cd_from_collection' collection.id cd.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-outline-danger">Return to Library</button>
-          </form>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
-  {% elif request.GET.q %}
-    <p class="text-muted">No Records matched your search.</p>
-  {% else %}
-    <p class="text-muted">No Records in this collection yet.</p>
-  {% endif %}
+        </div>
+
+        {% if user == collection.owner or user.profile.account_type == 'L' %}
+          <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#returnModal{{ cd.id }}">
+            Return to Library
+          </button>
+
+          <!-- Modal -->
+          <div class="modal fade" id="returnModal{{ cd.id }}" tabindex="-1" aria-labelledby="returnModalLabel{{ cd.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="returnModalLabel{{ cd.id }}">Confirm Return</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  Your item will be returned to the <strong>{{ location_data.0 }}</strong> library. Are you sure you want this?
+                </div>
+                <div class="modal-footer">
+                  <form method="POST" action="{% url 'remove_cd_from_collection' collection.id cd.id %}">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% elif request.GET.q %}
+  <p class="text-muted">No Records matched your search.</p>
+{% else %}
+  <p class="text-muted">No Records in this collection yet.</p>
+{% endif %}
+
 
 {% if user == collection.owner or user.profile.account_type == 'L' %}
     <hr>
@@ -187,6 +262,56 @@
     transform: scale(1.05);
     color: white;
   }
+  #search-form {
+    max-width: 300px;
+  }
+  #search-icon {
+    background: transparent;
+    border: none;
+    z-index: 2;
+    padding-left: 10px;
+  }
+  #search-icon:focus + #search-input,
+  #search-input:focus {
+    display: block !important;
+
+  }
+  
+  .expandable-search {
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+  }
+  
+  .search-box {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .icon-btn {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #6c757d;
+    font-size: 1rem;
+    z-index: 2;
+  }
+  
+  .search-input {
+    width: 0;
+    opacity: 0;
+    padding-left: 2rem;
+    transition: width 0.3s ease, opacity 0.3s ease;
+    border-radius: 20px;
+  }
+  
+  .search-box.active .search-input {
+    width: 250px;
+    opacity: 1;
+  }
   
 </style>
 
@@ -198,6 +323,33 @@
     title.addEventListener("mouseenter", () => pencil.classList.remove("d-none"));
     title.addEventListener("mouseleave", () => pencil.classList.add("d-none"));
   }
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchBox = document.querySelector('.search-box');
+    const input = searchBox.querySelector('.search-input');
+    const button = document.getElementById('toggle-search');
+  
+    let expanded = false;
+  
+    button.addEventListener('click', function () {
+      if (!expanded) {
+        searchBox.classList.add('active');
+        input.focus();
+        expanded = true;
+      } else if (!input.value.trim()) {
+        searchBox.classList.remove('active');
+        input.blur();
+        expanded = false;
+      }
+    });
+  
+    input.addEventListener('blur', function () {
+      if (!input.value.trim()) {
+        searchBox.classList.remove('active');
+        expanded = false;
+      }
+    });
+  });
+  
 </script>
 
 {% endblock %}
