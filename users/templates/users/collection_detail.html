@@ -52,15 +52,16 @@
     </div>
   </form>
 
-
   <h4 class="mt-4">Records in This Collection</h4>
-    {% if cds %}
+
+  {% if cd_with_location %}
     <ul class="list-group mb-4">
-      {% for cd in cds %}
+      {% for cd, location_data in cd_with_location %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <div>
             <strong>{{ cd.title }}</strong> by {{ cd.artist }}<br>
-            <small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small>
+            <small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small><br>
+            <small class="text-muted">Location: <span class="badge bg-{{ location_data.1 }}">{{ location_data.0 }}</span></small>
             {% if user.profile.account_type == 'L' and cd.owner != user %}
               <br><small class="text-muted">Owner: {{ cd.owner.username }}</small>
             {% endif %}

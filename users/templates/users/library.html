@@ -57,7 +57,7 @@
               </div>
               <div class="col-md-6">
                 <label for="genre" class="form-label">Genre</label>
-                <input type="text" name="genre" id="genre" class="form-control">
+                <input type="text" name="genre" id="genre" class="form-control" required>
               </div>
               <div class="col-md-6">
                 <label for="release_year" class="form-label">Release Year</label>
@@ -65,7 +65,7 @@
               </div>
               <div class="col-12">
                 <label for="description" class="form-label">Description</label>
-                <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+                <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
               </div>
               <div class="col-12">
                 <label for="cover_image" class="form-label">Cover Image <span class="text-danger">*</span></label>
@@ -127,10 +127,9 @@
                 Year: {{ item.cd.release_year }}<br>
                 {% if is_librarian and not item.is_owned %}Owner: {{ item.cd.owner.username }}<br>{% endif %}
                 {% if item.collection %}
-                  Collection: <span class="badge bg-primary p-2">{{ item.collection.name }}</span>
-                {% else %}
-                  <span class="text-muted">Not in a collection</span>
+                  Collection: <span class="badge bg-primary p-2">{{ item.collection.name }}</span><br>
                 {% endif %}
+                <span class="badge bg-{{ item.location_data.1 }}">{{ item.location_data.0 }}</span>
               </small>
             </p>
           </div>
