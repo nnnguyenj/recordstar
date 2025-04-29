@@ -9,71 +9,75 @@
   <!-- Title and Create Button -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold" style="color: #560BAD;">Your Collections</h2>
-    <a href="{% url 'add_collection' %}" class="btn btn-outline-primary px-4 py-2 create-btn">
+    <button class="btn btn-outline-primary px-4 py-2 create-btn" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
       Create New Collection
-    </a>
+    </button>
+    
   </div>
-
   {% if own_collections %}
-  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3 g-md-4">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
     {% for collection in own_collections %}
-    <div class="col">
-      <div class="card collection-card h-auto position-relative">
-        <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
-          <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            ⋮
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li>
-              <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
-                Make {{ collection.is_public|yesno:"Private,Public" }}
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item text-danger delete-collection" href="#" data-id="{{ collection.id }}" data-name="{{ collection.name }}">
-                Delete
-              </a>
-            </li>
-          </ul>
-        </div>
+      <div class="col">
+        <div class="spotify-card h-100 text-center position-relative">
+          
+          <!-- Dropdown menu -->
+          <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
+            <button class="btn btn-sm dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButton{{ collection.id }}" data-bs-toggle="dropdown" aria-expanded="false"></button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ collection.id }}">
+              {% if user.profile.is_librarian %}
+                <li>
+                  <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
+                    Make {{ collection.is_public|yesno:"Private,Public" }}
+                  </a>
+                </li>
+              {% endif %}
+              <li>
+                <a class="dropdown-item text-danger delete-collection" href="#" data-id="{{ collection.id }}" data-name="{{ collection.name }}">
+                  Delete
+                </a>
+              </li>
+            </ul>
+          </div>
+      
+                  <div class="p-2" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
+                    {% if collection.cover_image %}
+                      <img src="{{ collection.cover_image.url }}" class="img-fluid rounded mb-2" alt="Cover image" style="width:95%; height:240px; object-fit:cover;">
+                    {% else %}
+                      <div class="bg-light d-flex align-items-center justify-content-center mb-2 rounded" style="height: 240px;">
+                        <i class="fas fa-music fa-3x text-muted"></i>
+                      </div>
+                    {% endif %}
+                    <h5 class="fw-bold mb-1" style="font-size:1rem;">{{ collection.name }}</h5>
+                    <p class="text-muted mb-1" style="font-size:0.9rem;">{{ collection.owner.username }}</p>
+                    <div class="mt-auto">
+                      {% if collection.is_public %}
+                        <span class="badge bg-success">Public Collection</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Private Collection</span>
+                      {% endif %}
+                    </div>
+                  </div>
+      
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-center text-muted">You have no collections yet.</p>
+        {% endif %}
 
-        <!-- Main body clickable for detail -->
-        <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
-          {% if collection.cover_image %}
-          <img src="{{ collection.cover_image.url }}" class="card-img-top mb-2 img-fluid rounded" 
-                style="object-fit:cover; width:100%; height: auto;" alt="Cover">
-          {% endif %}
-          <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
-          <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
-          <p class="text-muted small mt-2">{{ collection.cds.count }} Records</p>
-
-          <!-- Request Access Button for Private Collections -->
-          {% if not collection.is_public and user != collection.owner and user.profile.account_type == 'P' and user not in collection.allowed_users.all %}
-            <a href="{% url 'request_access_to_collection' collection.id %}" class="btn btn-sm btn-outline-primary mt-2">
-              Request Access
-            </a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-    <p class="text-center text-muted">You have no collections yet.</p>
-  {% endif %}
   
   <!-- Other Users' Collections (Librarians Only) -->
   {% if is_librarian and other_collections %}
-    <h2 class="fw-bold mt-5 mb-4" style="color: #560BAD;">Other Users' Collections</h2>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-      {% for collection in other_collections %}
+  <h2 class="fw-bold mt-5 mb-4" style="color: #560BAD;">Other Users' Collections</h2>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 mb-4">
+    {% for collection in other_collections %}
       <div class="col">
-        <div class="card collection-card h-100 position-relative">
+        <div class="spotify-card h-100 text-center position-relative">
+          <!-- Dropdown menu -->
           <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
-            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-              ⋮
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
+            <button class="btn btn-sm dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButtonOther{{ collection.id }}" data-bs-toggle="dropdown" aria-expanded="false"></button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButtonOther{{ collection.id }}">
               <li>
                 <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
                   Make {{ collection.is_public|yesno:"Private,Public" }}
@@ -87,28 +91,35 @@
             </ul>
           </div>
 
-          <div class="card-body text-center" style="cursor: pointer;" onclick="window.location.href='{% url 'collection_detail' collection.id %}'">
+          <!-- Main body -->
+          <div class="p-2" onclick="window.location.href='{% url 'collection_detail' collection.id %}'" style="cursor: pointer;">
             {% if collection.cover_image %}
-            <img src="{{ collection.cover_image.url }}" class="card-img-top mb-2 img-fluid rounded" 
-                  style="object-fit:cover; width:100%; height: auto;" alt="Cover">
+              <img src="{{ collection.cover_image.url }}" class="img-fluid rounded mb-2" alt="Cover image" style="width:95%; height:240px; object-fit: cover;">
+            {% else %}
+              <div class="bg-light d-flex align-items-center justify-content-center mb-2 rounded" style="height: 240px;">
+                <i class="fas fa-music fa-3x text-muted"></i>
+              </div>
             {% endif %}
-            <h5 class="card-title fw-bold mb-1">{{ collection.name }}</h5>
-            <p class="text-muted small mb-0">{{ collection.is_public|yesno:"Public,Private" }}</p>
-            <p class="text-muted small mb-0">Owner: {{ collection.owner.username }}</p>
-            <p class="text-muted small mt-2">{{ collection.cds.count }} Records</p>
-
-            <!-- Request Access Button for Other Users' Collections -->
+            <h5 class="fw-bold mb-1" style="font-size:1rem;">{{ collection.name }}</h5>
+            <p class="text-muted mb-1" style="font-size:0.9rem;">{{ collection.owner.username }}</p>
+            <div class="mt-auto">
+              {% if collection.is_public %}
+                <span class="badge bg-success">Public Collection</span>
+              {% else %}
+                <span class="badge bg-secondary">Private Collection</span>
+              {% endif %}
+            </div>
             {% if not collection.is_public and user != collection.owner and user.profile.account_type == 'P' and user not in collection.allowed_users.all %}
-              <a href="{% url 'request_access_to_collection' collection.id %}" class="btn btn-sm btn-outline-primary mt-2">
-                Request Access
-              </a>
+              <a href="{% url 'request_access_to_collection' collection.id %}" class="btn btn-sm btn-outline-primary mt-2">Request Access</a>
             {% endif %}
           </div>
         </div>
       </div>
-      {% endfor %}
-    </div>
-  {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
+</div>
+
 
   <!-- Librarian: Show Pending Access Requests -->
   {% if is_librarian %}
@@ -153,6 +164,46 @@
     </div>
   </div>
 </div>
+
+<!-- Create Collection Modal -->
+<div class="modal fade" id="createCollectionModal" tabindex="-1" aria-labelledby="createCollectionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" enctype="multipart/form-data" action="{% url 'add_collection' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="createCollectionModalLabel">Create New Collection</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label">Collection Name</label>
+            <input type="text" name="name" id="name" class="form-control" placeholder="My Summer Playlist" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="cover_image" class="form-label">Cover Image (optional)</label>
+            <input type="file" name="cover_image" id="cover_image" class="form-control">
+          </div>
+
+          {% if request.user.profile.account_type == 'L' %}
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="is_public" id="is_public" checked>
+            <label class="form-check-label" for="is_public">Make collection public</label>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Collection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- (unchanged) -->
 <style>
   .collection-card {
@@ -236,6 +287,36 @@
   .modal.show .modal-dialog {
     transform: none;
   }
+  .spotify-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+  }
+  
+  .spotify-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .spotify-card h5 {
+    font-size: 1rem;
+  }
+  
+  .spotify-card p {
+    font-size: 0.9rem;
+  }
+  
+  .text-success, .text-danger {
+    font-size: 0.75rem;
+  }
+  
+  .fas.fa-check-circle, .fas.fa-times-circle {
+    font-size: 1rem;
+  }
+  
 </style>
 
 <script>

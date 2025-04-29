@@ -206,6 +206,11 @@ def my_collections_view(request):
     if request.user.profile.is_librarian:
         other_collections = Collection.objects.exclude(owner=request.user)
     
+    has_pending_requests = any(
+        req.status == "pending"
+        for col in own_collections
+        for req in col.access_requests.all()
+    )
     return render(request, "users/collection.html", {
         "own_collections": own_collections,
         "other_collections": other_collections,
