@@ -61,7 +61,7 @@
               </div>
               <div class="col-md-6">
                 <label for="release_year" class="form-label">Release Year</label>
-                <input type="number" name="release_year" id="release_year" class="form-control">
+                <input type="number" name="release_year" id="release_year" class="form-control" min="0" max="2025" required>
               </div>
               <div class="col-12">
                 <label for="description" class="form-label">Description</label>
@@ -86,8 +86,8 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
       {% for item in cd_info %}
       <div class="col">
-        <div class="card h-100 position-relative" style="transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); z-index: 1;">
-          <div class="position-relative" style="z-index: 0;">
+        <div class="card h-100 position-relative" style="transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+          <div class="position-relative">
             <a href="{% url 'public_item' item.cd.id %}" class="stretched-link"></a>
             {% if item.cd.cover_image %}
               <img src="{{ item.cd.cover_image.url }}" class="card-img-top" alt="Cover image" style="height: 200px; object-fit: cover;">
@@ -96,7 +96,7 @@
             {% endif %}
             <div class="dropdown position-absolute" style="top: 10px; right: 10px; z-index: 1070;">
               <button class="dropdown-toggle" style="border: none; background: transparent; z-index: 1071; position: relative;" type="button" id="dropdownMenuButton{{ item.cd.id }}" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation();"></button>
-              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ item.cd.id }}">
+              <ul class="dropdown-menu" style="z-index: 1072;" aria-labelledby="dropdownMenuButton{{ item.cd.id }}">
                 {% if is_librarian %}
                 <li><a class="dropdown-item" href="{% url 'edit_cd' item.cd.id %}">Edit</a></li>
                 <li>

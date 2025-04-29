@@ -20,6 +20,10 @@ class Profile(models.Model):
     is_collection_public = models.BooleanField(default=True)
     birthday = models.DateField(null=True, blank=True)
 
+    @property
+    def is_librarian(self):
+        return self.account_type == 'L'
+    
     def __str__(self):
         return f"{self.user.username} ({self.get_account_type_display()})"
     

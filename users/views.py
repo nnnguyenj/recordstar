@@ -203,13 +203,13 @@ def my_collections_view(request):
     other_collections = None
     
     # If user is a librarian, get all other collections
-    if request.user.profile.account_type == 'L':
+    if request.user.profile.is_librarian:
         other_collections = Collection.objects.exclude(owner=request.user)
     
     return render(request, "users/collection.html", {
         "own_collections": own_collections,
         "other_collections": other_collections,
-        "is_librarian": request.user.profile.account_type == 'L'
+        "is_librarian": request.user.profile.is_librarian,
     })
 
 @login_required
@@ -229,8 +229,7 @@ def collection_detail_view(request, collection_id):
     if not collection.is_public and request.user != collection.owner and request.user.profile.account_type != 'L':
         return render(request, "users/collection_detail_limited.html", {"collection": collection})
 
-    is_librarian = request.user.profile.account_type == 'L'
-    if is_librarian:
+    if request.user.profile.is_librarian:
         available_cds = CD.objects.exclude(id__in=collection.cds.values_list('id', flat=True))
     else:
         available_cds = CD.objects.filter(owner=request.user).exclude(id__in=collection.cds.values_list('id', flat=True))
@@ -260,7 +259,7 @@ def collection_detail_view(request, collection_id):
     return render(request, "users/collection_detail.html", {
         "collection": collection,
         "available_cds": available_cds,
-        "is_librarian": is_librarian,
+        "is_librarian": request.user.profile.is_librarian,
         "cds": cds,
         "query": query,
     })
@@ -369,7 +368,7 @@ def library_view(request):
             return render(request, "users/library.html", {
                 "cd_info": cd_info,
                 "error": "Cover image is required",
-                "is_librarian": request.user.profile.account_type == 'L',
+                "is_librarian": request.user.profile.is_librarian,
                 "form_data": {
                     "title": title,
                     "artist": artist,
@@ -395,7 +394,7 @@ def library_view(request):
     
     return render(request, "users/library.html", {
         "cd_info": cd_info,
-        "is_librarian": request.user.profile.account_type == 'L',
+        "is_librarian": request.user.profile.is_librarian,
         "user_collections": user_collections,
     })
 
@@ -493,7 +492,7 @@ def public_item_view(request, cd_id):
 
         user_collections = Collection.objects.filter(owner=request.user)
         is_owner = cd.owner == request.user
-        is_librarian = request.user.profile.account_type == 'L'
+        is_librarian = request.user.profile.is_librarian
         can_add_to_collection = is_librarian or is_owner
 
         has_pending_request = CDRequest.objects.filter(
