@@ -3,7 +3,8 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from allauth.socialaccount.providers.google.views import oauth2_login
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.http import require_POST
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from .forms import RatingForm
 from .models import Collection, Library, CD, Rating, FriendActivity, Profile, CDRequest, CollectionAccessRequest
 from django.contrib import messages
@@ -68,17 +69,6 @@ def recent_activity_view(request):
     })
 
 @login_required
-def collection_view(request):
-    records = CD.objects.filter(user=request.user)
-    return render(request, "users/collection.html", {"records": records})
-
-
-@login_required
-def my_collections_view(request):
-    collections = request.user.collections.all()
-    return render(request, "users/collection.html", {"collections": collections})
-
-@login_required
 def ratings_view(request):
     ratings = Rating.objects.filter(user=request.user).order_by('-created_at')
     
@@ -106,7 +96,7 @@ def profile_view(request):
         profile.image = request.FILES['profile_picture']
         profile.save()
         messages.success(request, "Profile picture updated.")
-        return redirect('profile')  # make sure this matches your URL name
+        return redirect('profile')
     
     return render(request, "users/profile.html")
 
@@ -124,7 +114,7 @@ def edit_profile_info(request):
         else:
             messages.error(request, "Username and email are required.")
 
-    return redirect('profile')  # make sure 'profile' is a valid URL name
+    return redirect('profile')
 
 @login_required
 def settings_view(request):
@@ -196,13 +186,10 @@ def librarians_view(request):
 
 @login_required
 def my_collections_view(request):
-    # Get the user's own collections
     own_collections = Collection.objects.filter(owner=request.user)
     
-    # Initialize other_collections as None
     other_collections = None
     
-    # If user is a librarian, get all other collections
     if request.user.profile.is_librarian:
         other_collections = Collection.objects.exclude(owner=request.user)
     
@@ -226,16 +213,31 @@ def add_collection_view(request):
             )
             if 'cover_image' in request.FILES:
                 col.cover_image = request.FILES['cover_image']
-                col.save()
+                
+            col.save()
             return redirect("collection")
     return render(request, "users/add_collection.html")
 
 @login_required
 def collection_detail_view(request, collection_id):
     collection = get_object_or_404(Collection, id=collection_id)
-
-    if not collection.is_public and request.user != collection.owner and request.user.profile.account_type != 'L':
-        return render(request, "users/collection_detail_limited.html", {"collection": collection})
+    allowed_users = collection.allowed_users.all()
+    has_requested = CollectionAccessRequest.objects.filter(
+                        collection=collection,
+                        requester=request.user,
+                        status='pending'
+                    ).exists()
+    
+    has_access = (collection.is_public or 
+                 request.user == collection.owner or 
+                 request.user.profile.is_librarian or 
+                 request.user in allowed_users)
+    
+    if not has_access:
+        return render(request, "users/collection_detail_limited.html", {
+            "collection": collection, 
+            "has_requested": has_requested
+        })
 
     if request.user.profile.is_librarian:
         available_cds = CD.objects.exclude(id__in=collection.cds.values_list('id', flat=True))
@@ -247,7 +249,6 @@ def collection_detail_view(request, collection_id):
         if cd_id:
             cd = get_object_or_404(CD, id=cd_id)
 
-            #if adding to a private collection, remove from other collections first
             if not collection.is_public:
                 cd.collections.clear()
 
@@ -266,13 +267,12 @@ def collection_detail_view(request, collection_id):
 
     return render(request, "users/collection_detail.html", {
         "collection": collection,
+        "has_requested": has_requested,
         "available_cds": available_cds,
         "is_librarian": request.user.profile.is_librarian,
         "cds": cds,
         "query": query,
     })
-
-
 
 
 @login_required
@@ -808,26 +808,50 @@ def anon_user_view(request):
     })
 
 @login_required
+@require_POST
 def request_access_to_collection(request, collection_id):
     collection = get_object_or_404(Collection, id=collection_id)
-    if collection.owner == request.user:
-        messages.info(request, "You already own this collection.")
-        return redirect('collection')
-    if CollectionAccessRequest.objects.filter(collection=collection, requester=request.user, status='pending').exists():
-        messages.info(request, "Access request already pending.")
-        return redirect('collection')
-    if request.user in collection.allowed_users.all():
-        messages.info(request, "You already have access.")
-        return redirect('collection')
-    CollectionAccessRequest.objects.create(collection=collection, requester=request.user)
-    messages.success(request, "Access request sent.")
-    return redirect('collection')
+    
+    # Check if user already has access
+    if collection.owner == request.user or request.user in collection.allowed_users.all():
+        messages.info(request, "You already have access to this collection.")
+    else:
+        # Check if there's a pending request
+        existing_request = CollectionAccessRequest.objects.filter(
+            collection=collection,
+            requester=request.user
+        ).first()
+        
+        if existing_request:
+            if existing_request.status == 'pending':
+                messages.info(request, "Your access request is pending approval from a librarian.")
+            elif existing_request.status == 'approved':
+                messages.info(request, "Your access request has already been approved.")
+            else:  # rejected
+                # Create a new request if previous one was rejected
+                CollectionAccessRequest.objects.create(
+                    collection=collection,
+                    requester=request.user,
+                    status='pending'
+                )
+                messages.success(request, f"Access request sent for {collection.name}. Waiting for approval.")
+        else:
+            # Create a new request
+            CollectionAccessRequest.objects.create(
+                collection=collection,
+                requester=request.user,
+                status='pending'
+            )
+            messages.success(request, f"Access request sent for {collection.name}. Waiting for approval.")
+    
+    # Redirect back to the limited view
+    return redirect('collection_detail', collection_id=collection.id)
 
 @login_required
 def respond_to_collection_access_request(request, request_id):
     access_request = get_object_or_404(CollectionAccessRequest, id=request_id)
 
-    if request.user.profile.account_type != 'L':
+    if not request.user.profile.is_librarian:
         return HttpResponseForbidden("Only librarians can approve or reject access requests.")
 
     if request.method == 'POST':

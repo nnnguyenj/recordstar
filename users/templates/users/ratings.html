@@ -25,10 +25,11 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li>
-                    <button class="dropdown-item text-danger delete-rating" 
+                    <button class="dropdown-item text-danger" 
+                            type="button"
                             data-bs-toggle="modal" 
                             data-bs-target="#deleteRatingModal" 
-                            data-id="{{ rating.id }}" 
+                            data-url="{% url 'delete_rating' rating.id %}"
                             data-title="{{ rating.cd.title }}">
                       Delete Rating
                     </button>
@@ -208,19 +209,19 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Handle rating deletion
-    const deleteButtons = document.querySelectorAll('.delete-rating');
-    const deleteForm = document.getElementById('deleteRatingForm');
-    const ratingTitle = document.getElementById('ratingTitle');
-    
-    deleteButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const ratingId = this.getAttribute('data-id');
-        const cdTitle = this.getAttribute('data-title');
-        
-        ratingTitle.textContent = cdTitle;
-        deleteForm.action = `/ratings/delete/${ratingId}/`;
-      });
+    var deleteModal = document.getElementById('deleteRatingModal');
+
+    deleteModal.addEventListener('show.bs.modal', function(event) {
+      // Button that triggered the modal
+      var button = event.relatedTarget;
+      // Extract info from data-* attributes
+      var url   = button.getAttribute('data-url');
+      var title = button.getAttribute('data-title');
+
+      // Update modal content
+      this.querySelector('#ratingTitle').textContent = title;
+      // Update form action
+      this.querySelector('#deleteRatingForm').action = url;
     });
   });
 </script>
