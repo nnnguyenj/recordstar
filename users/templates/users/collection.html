@@ -129,6 +129,22 @@
         {% endif %}
       {% endfor %}
     {% endfor %}
+    {% for collection in other_collections %}
+      {% for request in collection.access_requests.all %}
+        {% if request.status == 'pending' %}
+          {% with has_pending_requests=True %}
+          <div class="mb-3 p-3 border rounded">
+            <p><strong>{{ request.requester.username }}</strong> requested access to <strong>{{ collection.name }}</strong> on {{ request.requested_at|date:"M d, Y" }}</p>
+            <form method="post" action="{% url 'respond_to_collection_access_request' request.id %}">
+              {% csrf_token %}
+              <button name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+              <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+            </form>
+          </div>
+          {% endwith %}
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
     {% if not has_pending_requests %}
       <p class="ms-4 text-muted">No pending access requests.</p>
     {% endif %}
