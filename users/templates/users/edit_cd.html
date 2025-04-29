@@ -22,15 +22,15 @@
           </div>
           <div class="col-md-6">
             <label for="genre" class="form-label">Genre</label>
-            <input type="text" name="genre" id="genre" class="form-control" value="{{ cd.genre }}">
+            <input type="text" name="genre" id="genre" class="form-control" value="{{ cd.genre }}" required>
           </div>
           <div class="col-md-6">
             <label for="release_year" class="form-label">Release Year</label>
-            <input type="number" name="release_year" id="release_year" class="form-control" value="{{ cd.release_year|default_if_none:'' }}">
+            <input type="number" name="release_year" id="release_year" class="form-control" value="{{ cd.release_year|default_if_none:'' }}" required>
           </div>
           <div class="col-12">
             <label for="description" class="form-label">Description</label>
-            <textarea name="description" id="description" class="form-control" rows="3">{{ cd.description }}</textarea>
+            <textarea name="description" id="description" class="form-control" rows="3" required>{{ cd.description }}</textarea>
           </div>
           <div class="col-12">
             <label for="cover_image" class="form-label">Cover Image <span class="text-danger">*</span></label>
