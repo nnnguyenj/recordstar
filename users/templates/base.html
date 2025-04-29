@@ -1,4 +1,5 @@
-{% load bootstrap5 static %}
+{% load bootstrap5 %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,10 +40,10 @@
     }
     /* Main content should start below topbar and beside sidebar */
     .main-area {
-      margin-left: 400px;    /* same as sidebar width */
+      margin-left: 240px;    /* same as sidebar width */
       margin-top: 60px;
       padding: 20px;
-      background-color: #fff;
+      background: transparent;
       min-height: calc(100vh - 60px);
     }
     /* Sidebar styling */
@@ -155,7 +156,7 @@
 </head>
 <body>
   <div class="container-fluid">
-    <div class="row">
+    <div class="row" style="background-color: #fcfcfc;">
       <!-- Sidebar -->
       <nav class="col-md-3 col-lg-2 sidebar">
         <a href="{% url 'dashboard' %}">
@@ -206,7 +207,7 @@
       <!-- 🛑 CLOSE the sidebar nav here! -->
     
       <!-- 🆕 Main content area -->
-      <main class="col-md-9 col-lg-10 d-flex flex-column" style="background-color: #fcfcfc;">
+      <main class="col-md-9 col-lg-10 d-flex flex-column" style="background-color: #fcfcfc; width: 90%;">
         <div class="topbar d-flex justify-content-end align-items-center p-3">
           <div class="dropdown d-flex align-items-center">
             {% if user.is_authenticated %}
@@ -219,7 +220,7 @@
               <a class="dropdown-toggle text-decoration-none" style="color: #632fbd;" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ user.username }}
               </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
                 <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
               </ul>
