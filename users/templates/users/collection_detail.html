@@ -56,6 +56,9 @@
           <div>
             <strong>{{ cd.title }}</strong> by {{ cd.artist }}<br>
             <small class="text-muted">{{ cd.genre }} ({{ cd.release_year }})</small>
+            {% with cd.get_visibility_label(user) as location_data %}
+              <br><small class="text-muted">Location: <span class="badge bg-{{ location_data.1 }}">{{ location_data.0 }}</span></small>
+            {% endwith %}
             {% if user.profile.account_type == 'L' and cd.owner != user %}
               <br><small class="text-muted">Owner: {{ cd.owner.username }}</small>
             {% endif %}

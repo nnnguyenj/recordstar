@@ -73,6 +73,15 @@ class CD(models.Model):
         if not self.collections.exists():
             return True
         return self.collections.filter(is_public=True).exists()
+    
+    def get_visibility_label(self, user):
+        if self.collections.filter(is_public=True).exists():
+            return ("Public Item", "success")  # (label, badge_color)
+        elif self.collections.filter(owner=user).exists() or self.collections.filter(allowed_users=user).exists():
+            return ("Private Item", "warning")
+        else:
+            return ("Unlisted Item", "secondary")
+
 
 class CDRequest(models.Model):
     STATUS_CHOICES = [
