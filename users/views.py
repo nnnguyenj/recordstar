@@ -651,7 +651,7 @@ def search_results(request):
 
             collection_results = base.filter(
                 Q(is_public=True) |
-                Q(owner=user)
+                Q(owner=user) | Q(is_public=False)
             ).distinct()
 
         else:  # anonymous user
