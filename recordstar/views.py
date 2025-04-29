@@ -17,33 +17,38 @@ class IndexView(generic.TemplateView):
 
 @login_required
 def first_time_setup(request):
+    user = request.user
+    profile = user.profile
+
     if request.method == 'POST':
-        user = request.user
-        profile = user.profile
-
-        user.first_name = request.POST.get('first_name', user.first_name)
-        user.last_name = request.POST.get('last_name', user.last_name)
-        user.username = request.POST.get('username', user.username)
-        birthday = request.POST.get('birthday')
-
-        if birthday:
-            profile.birthday = birthday
-
+        # Handle profile picture upload
         if 'profile_picture' in request.FILES:
             profile.image = request.FILES['profile_picture']
+            profile.save()
+            return redirect('first_time_setup')  # ✅ stay on the setup page
 
-        #mark profile as completed
-        profile.profile_completed = True
+        # Handle profile info form
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        username = request.POST.get('username')
+        birthday = request.POST.get('birthday')
 
-        user.save()
-        profile.save()
-        user = authenticate(request, username=user.username)
-        if user:
+        # Only save if all fields are filled
+        if first_name and last_name and username and birthday:
+            user.first_name = first_name
+            user.last_name = last_name
+            user.username = username
+            profile.birthday = birthday
+            profile.profile_completed = True  # ✅ now mark profile as completed
+
+            user.save()
+            profile.save()
+
             login(request, user)
-
-        return redirect("dashboard")
+            return redirect('first_time_setup')  # ✅ stay on setup page after info submit too
 
     return render(request, "recordstar/first_time_setup.html")
+
 
 @login_required
 def dashboard_view(request):

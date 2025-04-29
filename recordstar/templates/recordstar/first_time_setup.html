@@ -243,9 +243,9 @@ body {
           <label for="file-upload" class="btn" style="background-color: #fff; border: 1px solid #ccc; font-weight: 600; padding: 0.6rem 1rem; color: #000; border-radius: 6px; cursor: pointer;">
             Choose File
           </label>
-          <button type="button" class="btn" onclick="handleUpload()" style="background-color: #560BAD; color: white; padding: 0.6rem 1.5rem; font-weight: 600; border-radius: 6px;">
+          <button type="submit" class="btn" style="background-color: #560BAD; color: white; padding: 0.6rem 1.5rem; font-weight: 600; border-radius: 6px;">
             Upload
-          </button>          
+          </button>                
         </form>
       </div>
     </div>
@@ -323,15 +323,16 @@ body {
       });
     
       const continueBtn = document.getElementById('continue-dashboard-btn');
-      if (allFilled && profilePicUploaded) {
+      const hasProfilePic = document.getElementById('profile-preview').src.includes('media');  // ✅ means user uploaded pfp
+    
+      if (allFilled && hasProfilePic) {
         continueBtn.style.display = 'block';
-        continueBtn.onclick = redirectToDashboard; // <-- assign the redirect function here
-
+        continueBtn.onclick = redirectToDashboard;
       } else {
         continueBtn.style.display = 'none';
-        continueBtn.onclick = null;  // safety: remove redirect if conditions aren't met
+        continueBtn.onclick = null;
       }
-    }    
+    }
   
     document.querySelectorAll('#first_name, #last_name, #username, #birthday').forEach(input => {
       input.addEventListener('input', checkFieldsForContinue);
