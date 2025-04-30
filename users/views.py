@@ -541,7 +541,7 @@ def public_item_view(request, cd_id):
         user_collections = Collection.objects.filter(owner=request.user)
         is_owner = cd.owner == request.user
         is_librarian = request.user.profile.is_librarian
-        can_add_to_collection = is_librarian or is_owner
+        can_add_to_collection = is_librarian or is_owner or (cd.is_public() and request.user.profile.account_type == 'P')
 
         has_pending_request = CDRequest.objects.filter(
             cd=cd,
