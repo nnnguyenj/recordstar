@@ -495,6 +495,12 @@ def edit_cd(request, cd_id):
 # had to take out the login required so anon users can see it 
 def public_item_view(request, cd_id):
     cd = get_object_or_404(CD, id=cd_id)
+    location_data = cd.get_visibility_label(request.user)
+
+    #restrict unlisted items for anonymous users
+    if location_data[0] == "Unlisted Item" and not request.user.is_authenticated:
+        return HttpResponseForbidden("You must be logged in to view this item.")
+
     user_rating = None
     user_collections = None
     is_owner = False
@@ -502,11 +508,9 @@ def public_item_view(request, cd_id):
     can_add_to_collection = False
     has_pending_request = False
 
-    # Calculate average rating
     ratings = cd.ratings.all()
     avg_rating = round(sum(r.rating_value for r in ratings) / ratings.count(), 1) if ratings.exists() else 0
 
-    # If user is logged in, fetch personalized data
     if request.user.is_authenticated:
         try:
             user_rating = Rating.objects.get(user=request.user, cd=cd)
@@ -519,13 +523,12 @@ def public_item_view(request, cd_id):
         can_add_to_collection = is_librarian or is_owner
 
         has_pending_request = CDRequest.objects.filter(
-            cd=cd, 
-            requester=request.user, 
+            cd=cd,
+            requester=request.user,
             status='pending'
         ).exists()
 
     is_public = cd.is_public()
-    location_data = cd.get_visibility_label(request.user)
 
     return render(request, "users/public_item.html", {
         "cd": cd,
@@ -539,7 +542,6 @@ def public_item_view(request, cd_id):
         "is_public": is_public,
         "location_data": location_data,
     })
-
 
 @login_required
 def add_to_collection(request, collection_id, cd_id):
