@@ -453,19 +453,20 @@ def delete_cd(request, cd_id):
 
 @login_required
 def edit_cd(request, cd_id):
-    profile = request.user.profile
-    if not profile.is_librarian:
+    # Only librarians get in
+    if not request.user.profile.is_librarian:
         return redirect('library')
 
-    cd = get_object_or_404(CD, id=cd_id, owner=request.user)
-    
+    # Librarians can edit any CD
+    cd = get_object_or_404(CD, id=cd_id)
+
     if request.method == "POST":
         title = request.POST.get("title")
         artist = request.POST.get("artist")
         genre = request.POST.get("genre")
         release_year = request.POST.get("release_year")
         description = request.POST.get("description")
-        
+
         if not cd.cover_image and 'cover_image' not in request.FILES:
             return render(request, "users/edit_cd.html", {
                 "cd": cd,
@@ -478,19 +479,20 @@ def edit_cd(request, cd_id):
                     "description": description,
                 }
             })
-        
+
         cd.title = title
         cd.artist = artist
         cd.genre = genre
         cd.release_year = release_year or None
         cd.description = description
-        
+
         if 'cover_image' in request.FILES:
             cd.cover_image = request.FILES['cover_image']
         cd.save()
         return redirect("library")
-    
+
     return render(request, "users/edit_cd.html", {"cd": cd})
+
 
 # had to take out the login required so anon users can see it 
 def public_item_view(request, cd_id):
