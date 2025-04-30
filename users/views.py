@@ -29,26 +29,28 @@ def google_login(request):
     return oauth2_login(request)
 
 def dashboard_view(request):
-    # 1) Collections:
-    #    - if logged in, show EVERY collection (public + private titles)
-    #    - if anon, only public
-    if request.user.is_authenticated:
-        collections = Collection.objects.all().distinct()
-    else:
-        collections = Collection.objects.filter(is_public=True).distinct()
+    user = request.user
+    is_authenticated = user.is_authenticated
+    is_librarian = user.is_authenticated and user.profile.is_librarian
 
-    # 2) Public CDs: those not in any collection or in a public collection
+    # Collections
+    if is_authenticated:
+        # Patrons and librarians see all collection titles (public & private)
+        collections = Collection.objects.all()
+    else:
+        collections = Collection.objects.filter(is_public=True)
+
+    # Unlisted + Public CDs (viewable by everyone)
     public_cds = CD.objects.filter(
         Q(collections__isnull=True) |
         Q(collections__is_public=True)
     ).distinct()
 
-    # 3) Private CDs: only for librarians, only CDs in private collections they own
+    # Private CDs (only for librarians)
     private_cds = CD.objects.none()
-    if request.user.is_authenticated and request.user.profile.is_librarian:
+    if is_librarian:
         private_cds = CD.objects.filter(
-            collections__is_public=False,
-            collections__owner=request.user
+            collections__is_public=False
         ).distinct()
 
     return render(request, "users/dashboard.html", {
@@ -56,7 +58,6 @@ def dashboard_view(request):
         "public_cds": public_cds,
         "private_cds": private_cds,
     })
-
 
 @login_required
 def recent_activity_view(request):
@@ -364,45 +365,53 @@ def toggle_collection_privacy(request, collection_id):
 
 @login_required
 def library_view(request):
-    # librarians get all CDs, patrons only their own
-    if request.user.profile.is_librarian:
-        user_cds = CD.objects.all()
+    user = request.user
+    is_librarian = user.profile.is_librarian
+
+    # Get all relevant CDs
+    if is_librarian:
+        cds = CD.objects.all()
     else:
-        user_cds = CD.objects.filter(owner=request.user)
-    
+        cds = CD.objects.filter(
+            Q(collections__isnull=True) |
+            Q(collections__is_public=True) |
+            Q(collections__allowed_users=user)
+        ).distinct()
+
     cd_info = []
-    for cd in user_cds:
-        if request.user.profile.is_librarian:
+    for cd in cds:
+        if is_librarian:
             collection = cd.collections.first()
-            is_owned = cd.owner == request.user
+            is_owned = cd.owner == user
         else:
-            collection = cd.collections.filter(owner=request.user).first()
-            is_owned = True
+            # patrons only add to their own collections
+            collection = cd.collections.filter(owner=user).first()
+            is_owned = cd.owner == user
 
-        location_data = cd.get_visibility_label(request.user)
-
+        location_data = cd.get_visibility_label(user)
         cd_info.append({
             'cd': cd,
             'collection': collection,
             'is_owned': is_owned,
             'location_data': location_data,
         })
-    
-    user_collections = Collection.objects.filter(owner=request.user)
 
-    if request.method == "POST":
+    user_collections = Collection.objects.filter(owner=user)
+
+    # Handle CD creation by librarians only
+    if request.method == "POST" and is_librarian:
         title = request.POST.get("title")
         artist = request.POST.get("artist")
         genre = request.POST.get("genre")
         release_year = request.POST.get("release_year")
         description = request.POST.get("description")
 
-        # cover image required
         if 'cover_image' not in request.FILES:
             return render(request, "users/library.html", {
                 "cd_info": cd_info,
                 "error": "Cover image is required",
-                "is_librarian": request.user.profile.is_librarian,
+                "is_librarian": is_librarian,
+                "user_collections": user_collections,
                 "form_data": {
                     "title": title,
                     "artist": artist,
@@ -411,7 +420,7 @@ def library_view(request):
                     "description": description,
                 }
             })
-        
+
         if title and artist:
             cd = CD.objects.create(
                 title=title,
@@ -419,18 +428,17 @@ def library_view(request):
                 genre=genre,
                 release_year=release_year or None,
                 description=description or "",
-                owner=request.user,
+                owner=user,
+                cover_image=request.FILES['cover_image'],
             )
-            cd.cover_image = request.FILES['cover_image']
-            cd.save()
-
             return redirect("library")
-    
+
     return render(request, "users/library.html", {
         "cd_info": cd_info,
-        "is_librarian": request.user.profile.is_librarian,
+        "is_librarian": is_librarian,
         "user_collections": user_collections,
     })
+
 
 @login_required
 def add_cd_to_library(request):
