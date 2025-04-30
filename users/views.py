@@ -13,7 +13,6 @@ from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-
 def index_view(request):
     return render(request, "users/dashboard.html")
 
@@ -28,26 +27,28 @@ def google_login(request):
     return oauth2_login(request)
 
 def dashboard_view(request):
-    # 1) Collections:
-    #    - if logged in, show EVERY collection (public + private titles)
-    #    - if anon, only public
-    if request.user.is_authenticated:
-        collections = Collection.objects.all().distinct()
-    else:
-        collections = Collection.objects.filter(is_public=True).distinct()
+    user = request.user
+    is_authenticated = user.is_authenticated
+    is_librarian = user.is_authenticated and user.profile.is_librarian
 
-    # 2) Public CDs: those not in any collection or in a public collection
+    # Collections
+    if is_authenticated:
+        # Patrons and librarians see all collection titles (public & private)
+        collections = Collection.objects.all()
+    else:
+        collections = Collection.objects.filter(is_public=True)
+
+    # Unlisted + Public CDs (viewable by everyone)
     public_cds = CD.objects.filter(
         Q(collections__isnull=True) |
         Q(collections__is_public=True)
     ).distinct()
 
-    # 3) Private CDs: only for librarians, only CDs in private collections they own
+    # Private CDs (only for librarians)
     private_cds = CD.objects.none()
-    if request.user.is_authenticated and request.user.profile.is_librarian:
+    if is_librarian:
         private_cds = CD.objects.filter(
-            collections__is_public=False,
-            collections__owner=request.user
+            collections__is_public=False
         ).distinct()
 
     return render(request, "users/dashboard.html", {
@@ -55,7 +56,6 @@ def dashboard_view(request):
         "public_cds": public_cds,
         "private_cds": private_cds,
     })
-
 
 @login_required
 def recent_activity_view(request):
@@ -363,45 +363,53 @@ def toggle_collection_privacy(request, collection_id):
 
 @login_required
 def library_view(request):
-    # librarians get all CDs, patrons only their own
-    if request.user.profile.is_librarian:
-        user_cds = CD.objects.all()
+    user = request.user
+    is_librarian = user.profile.is_librarian
+
+    # Get all relevant CDs
+    if is_librarian:
+        cds = CD.objects.all()
     else:
-        user_cds = CD.objects.filter(owner=request.user)
-    
+        cds = CD.objects.filter(
+            Q(collections__isnull=True) |
+            Q(collections__is_public=True) |
+            Q(collections__allowed_users=user)
+        ).distinct()
+
     cd_info = []
-    for cd in user_cds:
-        if request.user.profile.is_librarian:
+    for cd in cds:
+        if is_librarian:
             collection = cd.collections.first()
-            is_owned = cd.owner == request.user
+            is_owned = cd.owner == user
         else:
-            collection = cd.collections.filter(owner=request.user).first()
-            is_owned = True
+            # patrons only add to their own collections
+            collection = cd.collections.filter(owner=user).first()
+            is_owned = cd.owner == user
 
-        location_data = cd.get_visibility_label(request.user)
-
+        location_data = cd.get_visibility_label(user)
         cd_info.append({
             'cd': cd,
             'collection': collection,
             'is_owned': is_owned,
             'location_data': location_data,
         })
-    
-    user_collections = Collection.objects.filter(owner=request.user)
 
-    if request.method == "POST":
+    user_collections = Collection.objects.filter(owner=user)
+
+    # Handle CD creation by librarians only
+    if request.method == "POST" and is_librarian:
         title = request.POST.get("title")
         artist = request.POST.get("artist")
         genre = request.POST.get("genre")
         release_year = request.POST.get("release_year")
         description = request.POST.get("description")
 
-        # cover image required
         if 'cover_image' not in request.FILES:
             return render(request, "users/library.html", {
                 "cd_info": cd_info,
                 "error": "Cover image is required",
-                "is_librarian": request.user.profile.is_librarian,
+                "is_librarian": is_librarian,
+                "user_collections": user_collections,
                 "form_data": {
                     "title": title,
                     "artist": artist,
@@ -410,7 +418,7 @@ def library_view(request):
                     "description": description,
                 }
             })
-        
+
         if title and artist:
             cd = CD.objects.create(
                 title=title,
@@ -418,18 +426,17 @@ def library_view(request):
                 genre=genre,
                 release_year=release_year or None,
                 description=description or "",
-                owner=request.user,
+                owner=user,
+                cover_image=request.FILES['cover_image'],
             )
-            cd.cover_image = request.FILES['cover_image']
-            cd.save()
-
             return redirect("library")
-    
+
     return render(request, "users/library.html", {
         "cd_info": cd_info,
-        "is_librarian": request.user.profile.is_librarian,
+        "is_librarian": is_librarian,
         "user_collections": user_collections,
     })
+
 
 @login_required
 def add_cd_to_library(request):
@@ -463,19 +470,20 @@ def delete_cd(request, cd_id):
 
 @login_required
 def edit_cd(request, cd_id):
-    profile = request.user.profile
-    if not profile.is_librarian:
+    # Only librarians get in
+    if not request.user.profile.is_librarian:
         return redirect('library')
 
-    cd = get_object_or_404(CD, id=cd_id, owner=request.user)
-    
+    # Librarians can edit any CD
+    cd = get_object_or_404(CD, id=cd_id)
+
     if request.method == "POST":
         title = request.POST.get("title")
         artist = request.POST.get("artist")
         genre = request.POST.get("genre")
         release_year = request.POST.get("release_year")
         description = request.POST.get("description")
-        
+
         if not cd.cover_image and 'cover_image' not in request.FILES:
             return render(request, "users/edit_cd.html", {
                 "cd": cd,
@@ -488,23 +496,30 @@ def edit_cd(request, cd_id):
                     "description": description,
                 }
             })
-        
+
         cd.title = title
         cd.artist = artist
         cd.genre = genre
         cd.release_year = release_year or None
         cd.description = description
-        
+
         if 'cover_image' in request.FILES:
             cd.cover_image = request.FILES['cover_image']
         cd.save()
         return redirect("library")
-    
+
     return render(request, "users/edit_cd.html", {"cd": cd})
+
 
 # had to take out the login required so anon users can see it 
 def public_item_view(request, cd_id):
     cd = get_object_or_404(CD, id=cd_id)
+    location_data = cd.get_visibility_label(request.user)
+
+    #restrict unlisted items for anonymous users
+    if location_data[0] == "Unlisted Item" and not request.user.is_authenticated:
+        return HttpResponseForbidden("You must be logged in to view this item.")
+
     user_rating = None
     user_collections = None
     is_owner = False
@@ -512,11 +527,9 @@ def public_item_view(request, cd_id):
     can_add_to_collection = False
     has_pending_request = False
 
-    # Calculate average rating
     ratings = cd.ratings.all()
     avg_rating = round(sum(r.rating_value for r in ratings) / ratings.count(), 1) if ratings.exists() else 0
 
-    # If user is logged in, fetch personalized data
     if request.user.is_authenticated:
         try:
             user_rating = Rating.objects.get(user=request.user, cd=cd)
@@ -526,16 +539,15 @@ def public_item_view(request, cd_id):
         user_collections = Collection.objects.filter(owner=request.user)
         is_owner = cd.owner == request.user
         is_librarian = request.user.profile.is_librarian
-        can_add_to_collection = is_librarian or is_owner
+        can_add_to_collection = is_librarian or is_owner or (cd.is_public() and request.user.profile.account_type == 'P')
 
         has_pending_request = CDRequest.objects.filter(
-            cd=cd, 
-            requester=request.user, 
+            cd=cd,
+            requester=request.user,
             status='pending'
         ).exists()
 
     is_public = cd.is_public()
-    location_data = cd.get_visibility_label(request.user)
 
     return render(request, "users/public_item.html", {
         "cd": cd,
@@ -550,15 +562,12 @@ def public_item_view(request, cd_id):
         "location_data": location_data,
     })
 
-
 @login_required
 def add_to_collection(request, collection_id, cd_id):
     collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
     cd = get_object_or_404(CD, id=cd_id)
     
-    if request.user.profile.account_type != 'L' and cd.owner != request.user:
-        messages.error(request, "As a patron, you can only add your own CDs to collections.")
-        return redirect('public_item', cd_id=cd_id)
+
     
     if request.method == "POST":
         collection.cds.add(cd)
@@ -613,25 +622,22 @@ def delete_rating(request, rating_id):
 
 @login_required
 def add_cd_to_collection(request, collection_id, cd_id):
-        collection = get_object_or_404(Collection, id=collection_id)
-
-        cd = get_object_or_404(CD, id=cd_id)
-
-        if request.method == "POST":
-            try:
-                # Special handling for private collections
-                if not collection.is_public:
-                    cd.collections.clear()
-                collection.cds.add(cd)
-                messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
-                return redirect("collection_detail", collection_id=collection.id)
-            except ValidationError:
-                messages.error(
-                    request,
-                    "That item is private and cannot be added to a public collection."
-                )
-                return redirect("collection")
-        return redirect("collection_detail", collection_id=collection.id)
+    collection = get_object_or_404(Collection, id=collection_id)
+    cd = get_object_or_404(CD, id=cd_id)
+    if request.method == "POST":
+        try:
+            if not collection.is_public:
+                cd.collections.clear()
+            collection.cds.add(cd)
+            messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
+            return redirect("collection_detail", collection_id=collection.id)
+        except ValidationError:
+            messages.error(
+                request,
+                "That item is private and cannot be added to a public collection."
+            )
+            return redirect("collection")
+    return redirect("collection_detail", collection_id=collection.id)
 
 @login_required
 def create_collection_with_cd(request, cd_id):

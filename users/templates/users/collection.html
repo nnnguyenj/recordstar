@@ -5,15 +5,14 @@
 {% block title %}Your Collections{% endblock %}
 
 {% block content %}
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" style="background-color: orange;">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-  {% endfor %}
-{% endif %}
-
+  {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" style="background-color: orange;">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
 <div class="container mt-3">
   <!-- Title and Create Button -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -127,7 +126,6 @@
     {% endfor %}
   </div>
 {% endif %}
-</div>
 
 
   <!-- Librarian: Show Pending Access Requests -->
@@ -168,6 +166,7 @@
     {% if not has_pending_requests %}
       <p class="ms-4 text-muted">No pending access requests.</p>
     {% endif %}
+  </div>
   {% endif %}
 </div>
 
