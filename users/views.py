@@ -569,9 +569,7 @@ def add_to_collection(request, collection_id, cd_id):
     collection = get_object_or_404(Collection, id=collection_id, owner=request.user)
     cd = get_object_or_404(CD, id=cd_id)
     
-    if request.user.profile.account_type != 'L' and cd.owner != request.user:
-        messages.error(request, "As a patron, you can only add your own CDs to collections.")
-        return redirect('public_item', cd_id=cd_id)
+
     
     if request.method == "POST":
         collection.cds.add(cd)
