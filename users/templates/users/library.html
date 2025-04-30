@@ -16,8 +16,8 @@
     transition: background-color 0.3s ease, transform 0.2s ease;
   }
   .custom-collapse-btn:hover {
-    background-color: #7B3FE4;  /* darker on hover */
-    transform: scale(1.05);
+    background-color: #7B3FE4;
+    transform: scale(1.03);
     color: white;
   }
   .spotify-card {
@@ -52,16 +52,16 @@
 
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>{% if is_librarian %}All Records{% else %}{{ user.username }}'s Library{% endif %}</h2>
+    <h2 class="fw-bold" style="color: #560BAD;">Main Library</h2>
     {% if is_librarian %}
-      <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#addCdForm" aria-expanded="false" aria-controls="addCdForm" style="background-color: #7B3FE4; color: white;">
+      <button class="btn custom-collapse-btn" type="button" data-bs-toggle="collapse" data-bs-target="#addCdForm" aria-expanded="false" aria-controls="addCdForm">
         <i class="fa fa-plus"></i> Add New Record
       </button>
     {% endif %}
   </div>
 
   {% if is_librarian %}
-    <div class="collapse mb-4" id="addCdForm">
+    <div class="cd-form collapse mb-4" id="addCdForm">
       <div class="card">
         <div class="card-header">Add New Record to Library</div>
         <div class="card-body">
@@ -102,7 +102,7 @@
 
   {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
 
-  <h4 class="mt-4 mb-3">{% if is_librarian %}All Records{% else %}My Records{% endif %}</h4>
+  <h4 class="mt-4 mb-3" style="color: #560BAD;">All Records</h4>
   {% if cd_info %}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
       {% for item in cd_info %}

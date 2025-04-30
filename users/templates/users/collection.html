@@ -76,8 +76,8 @@
         <div class="spotify-card h-100 text-center position-relative">
           <!-- Dropdown menu -->
           <div class="dropdown position-absolute top-0 end-0 m-2 z-3">
-            <button class="btn btn-sm dropdown-toggle" style="border: none; background: transparent;" type="button" id="dropdownMenuButtonOther{{ collection.id }}" data-bs-toggle="dropdown" aria-expanded="false"></button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButtonOther{{ collection.id }}">
+            <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"></button>
+            <ul class="dropdown-menu dropdown-menu-end">
               <li>
                 <a class="dropdown-item toggle-privacy" href="#" data-id="{{ collection.id }}">
                   Make {{ collection.is_public|yesno:"Private,Public" }}
