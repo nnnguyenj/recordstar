@@ -119,7 +119,7 @@
           
           <!-- Dropdown -->
           <div class="dropdown position-absolute top-0 end-0 m-2">
-            <button class="btn btn-sm dropdown-toggle" style="background: transparent; border: none;" type="button" id="dropdownMenuButton{{ item.cd.id }}" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation();"></button>
+            <button class="btn btn-sm dropdown-toggle" style="background: gainsboro; opacity: 80%; border: none;" type="button" id="dropdownMenuButton{{ item.cd.id }}" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation();"></button>
             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ item.cd.id }}">
               {% if is_librarian %}
                 <li><a class="dropdown-item" href="{% url 'edit_cd' item.cd.id %}">Edit</a></li>

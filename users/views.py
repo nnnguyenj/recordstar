@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 def index_view(request):
@@ -253,12 +254,21 @@ def collection_detail_view(request, collection_id):
         cd_id = request.POST.get("cd_id")
         if cd_id:
             cd = get_object_or_404(CD, id=cd_id)
-
-            if not collection.is_public:
-                cd.collections.clear()
-
-            collection.cds.add(cd)
-            return redirect("collection_detail", collection_id=collection.id)
+            try:
+                if not collection.is_public:
+                    cd.collections.clear()
+                collection.cds.add(cd)
+                messages.success(
+                    request,
+                    f"Added '{cd.title}' to collection '{collection.name}'."
+                )
+                return redirect("collection_detail", collection_id=collection.id)
+            except ValidationError:
+                messages.error(
+                    request,
+                    "That item is private and cannot be added to a public collection."
+                )
+                return redirect("collection")
 
     query = request.GET.get("q", "").strip()
     cds = collection.cds.all()
@@ -608,17 +618,20 @@ def add_cd_to_collection(request, collection_id, cd_id):
         cd = get_object_or_404(CD, id=cd_id)
 
         if request.method == "POST":
-            
-            # Special handling for private collections
-            if not collection.is_public:
-                cd.collections.clear()
-                
-        collection.cds.add(cd)
-        messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
-
+            try:
+                # Special handling for private collections
+                if not collection.is_public:
+                    cd.collections.clear()
+                collection.cds.add(cd)
+                messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
+                return redirect("collection_detail", collection_id=collection.id)
+            except ValidationError:
+                messages.error(
+                    request,
+                    "That item is private and cannot be added to a public collection."
+                )
+                return redirect("collection")
         return redirect("collection_detail", collection_id=collection.id)
-
-    # Redirect or handle non-POST requests appropriately
 
 @login_required
 def create_collection_with_cd(request, cd_id):
