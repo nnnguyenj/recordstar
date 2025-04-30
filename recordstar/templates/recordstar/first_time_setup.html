@@ -105,7 +105,7 @@
     }
     .dot-nav {
       position: absolute;
-      bottom: 30px;
+      bottom: 50px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -171,6 +171,20 @@
       top: 20px;
       left: 30px;
     }
+    .fixed-footer {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      text-align: center;
+      padding: 0.75rem 1rem;
+      background: white;
+      font-size: 0.85rem;
+      color: #6c757d;
+      z-index: 9999;
+    }
+    
   </style>
 </head>
 <body>
@@ -201,7 +215,7 @@
 
       <!-- Step 2: Basic Info (no Save here now) -->
       <div class="section">
-        <div class="container text-center" style="margin-top: 100px; padding-top: 30px;">
+        <div class="container text-center" style="margin-top: 100px; padding-top: 10px;">
           <div class="form-container mx-auto">
             <h2 class="mb-3 fw-bold" style="color: #560BAD;">Create your Profile!</h2>
             <form id="setup-form" method="post" onsubmit="return handleSetupSubmit(event)">
@@ -366,5 +380,10 @@
       if (event.target.files.length > 0) reader.readAsDataURL(event.target.files[0]);
     }
   </script>
+  <footer class="fixed-footer">
+    This system is a class project. It is not monitored, and no real information should be submitted.
+  </footer>
+  
+  
 </body>
 </html>
