@@ -193,6 +193,11 @@ def my_collections_view(request):
     if request.user.profile.is_librarian:
         other_collections = Collection.objects.exclude(owner=request.user)
     
+    has_pending_requests = any(
+        req.status == "pending"
+        for col in own_collections
+        for req in col.access_requests.all()
+    )
     return render(request, "users/collection.html", {
         "own_collections": own_collections,
         "other_collections": other_collections,
@@ -267,6 +272,8 @@ def collection_detail_view(request, collection_id):
         )
 
     cd_with_location = [(cd, cd.get_visibility_label(request.user)) for cd in cds]
+    
+    all_librarians = User.objects.filter(profile__account_type='L')
 
     return render(request, "users/collection_detail.html", {
         "collection": collection,
@@ -276,6 +283,7 @@ def collection_detail_view(request, collection_id):
         "cds": cds,
         "cd_with_location": cd_with_location,
         "query": query,
+        "all_librarians": all_librarians,
     })
 
 @login_required
@@ -597,19 +605,22 @@ def delete_rating(request, rating_id):
 
 @login_required
 def add_cd_to_collection(request, collection_id, cd_id):
-    collection = get_object_or_404(Collection, id=collection_id)
+        collection = get_object_or_404(Collection, id=collection_id)
 
-    cd = get_object_or_404(CD, id=cd_id)
+        cd = get_object_or_404(CD, id=cd_id)
 
-    if request.method == "POST":
-        #if adding to a private collection, remove from other collections first
-        if not collection.is_public:
-            cd.collections.clear()
-
+        if request.method == "POST":
+            
+            # Special handling for private collections
+            if not collection.is_public:
+                cd.collections.clear()
+                
         collection.cds.add(cd)
         messages.success(request, f"Added '{cd.title}' to collection '{collection.name}'.")
 
-    return redirect('public_item', cd_id=cd_id)
+        return redirect("collection_detail", collection_id=collection.id)
+
+    # Redirect or handle non-POST requests appropriately
 
 @login_required
 def create_collection_with_cd(request, cd_id):
